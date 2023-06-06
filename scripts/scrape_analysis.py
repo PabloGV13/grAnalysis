@@ -21,7 +21,6 @@ from datetime import datetime
 from api.models import Review,Keyword,Stay
 
 
-
 MONTH_ES = {
     "enero" : 1,
     "febrero": 2,

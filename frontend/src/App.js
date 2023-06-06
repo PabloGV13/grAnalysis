@@ -12,10 +12,7 @@ import SideMenu from './Components/SideMenu';
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 axios.defaults.withCredentials = true;
-
-const client = axios.create({
-  baseURL: "http://127.0.0.1:8000"
-});
+axios.defaults.baseURL = "http://127.0.0.1:8000";
 
 function App() {
 
@@ -30,7 +27,7 @@ function App() {
 
   useEffect(() => {
     {/* if(user.admin)*/}
-    client.get("/api/user")
+    axios.get("/api/user")
     .then(function(res){
       setCurrentUser(true);
     })
@@ -39,11 +36,11 @@ function App() {
     })
   }, [])
 
-  
+    
 
   function sumbitRegistration(e) {
     e.preventDefault();
-    client.post(
+    axios.post(
       "/api/register",
       {
         email: email,
@@ -51,7 +48,7 @@ function App() {
         password: password
       }
     ).then(function(res){
-      client.post(
+      axios.post(
         "/api/login",
         {
           email: email,
@@ -66,7 +63,7 @@ function App() {
   function sumbitLogin(e) {
     e.preventDefault();
     {/* if(user.admin)*/}
-    client.post(
+    axios.post(
       "/api/login",
       {
         email: email,
@@ -80,7 +77,7 @@ function App() {
 
   function sumbitLogout(e) {
     e.preventDefault();
-    client.post(
+    axios.post(
       "/api/logout",
       {withCredentials: true}
     ).then(function(res) {

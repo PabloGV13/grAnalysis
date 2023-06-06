@@ -33,7 +33,7 @@ class UserSerializer(serializers.ModelSerializer):
 class StaySerializer(serializers.ModelSerializer):
     class Meta:
         model = Stay
-        fields = ['name', 'url']
+        fields = ['id', 'name', 'url']
 
 
 #class ReviewSerializer(serializers.ModelSerializer):

@@ -51,20 +51,29 @@ class UserView(CustomAPIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response({'user': serializer.data}, status=status.HTTP_200_OK)
-
-class StayView(APIView):
     
+
+class StayView(CustomAPIView):
+    permission_classes =  (permissions.AllowAny,)
+
     def get(self, request):
+        data = []
         stay_list = Stay.objects.values()
-        data = [{'id':stay.stay_id, 'nombre':stay.name, 'url':stay.url} for stay in stay_list]
-        return JsonResponse(data, safe=False)
+        for stay in stay_list: data.append(stay)
+        return Response(data, status=status.HTTP_200_OK)
 
 
-
-
-    #def get_reviews_data(self,request):
+class ReviewView(APIView):
+    
+    def get_reviews_data(self,request):
+        data = []
+        review_list = Review.objects.all()
+        for review in review_list: data.append(review)
+        return Response(data, status=status.HTTP_200_OK)
     #(lista de reviews para la pagina principal de analisis)
     #
+
+#class Keyword
     
     #def get_polarity(self,request):
     #(polaridad general del alojamiento)

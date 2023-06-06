@@ -6,3 +6,6 @@ granalysis/__pycache__
 #api
 api/__pycache__/
 api/migrations/
+
+#scripts
+scripts/clampert

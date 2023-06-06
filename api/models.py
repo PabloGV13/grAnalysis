@@ -67,6 +67,7 @@ class Stay(models.Model):
     stay_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200, unique=True)
     url = models.TextField()
+    #location = models.TextField() 
 
     #Cada usuario puede acceder a todos los alojamientos disponibles
     #user = models.ManyToManyField(User,blank=True)
@@ -96,7 +97,7 @@ class Review(models.Model):
 class Keyword(models.Model):
 
     keyword_id = models.AutoField(primary_key=True)
-    word = models.CharField(max_length=20)
+    word = models.CharField(max_length=20, unique = True)
     polarity = models.FloatField()
     frecuency = models.IntegerField()
     id_review = models.ForeignKey('Review', on_delete= models.CASCADE)

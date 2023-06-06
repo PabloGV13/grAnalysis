@@ -6,7 +6,7 @@ function AppRoutes() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path = "/" element={<Principal />}></Route>
+                <Route path = "/" element={<Analisis />}></Route>
                 <Route path = "/analisis" element={<Analisis />}></Route>
                 <Route path = "/comparar" element={<Comparar />}></Route>
             </Routes>
