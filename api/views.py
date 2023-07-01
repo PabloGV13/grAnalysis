@@ -56,7 +56,7 @@ class UserView(CustomAPIView):
 class StayView(CustomAPIView):
     permission_classes =  (permissions.AllowAny,)
 
-    def get(self, request):
+    def get(self, request): 
         data = []
         stay_list = Stay.objects.values()
         for stay in stay_list: data.append(stay)
@@ -64,6 +64,7 @@ class StayView(CustomAPIView):
 
 
 class ReviewView(APIView):
+    permission_classes =  (permissions.AllowAny,)
     
     def get_reviews_data(self,request):
         data = []

@@ -67,7 +67,8 @@ class Stay(models.Model):
     stay_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200, unique=True)
     url = models.TextField()
-    #location = models.TextField() 
+    location = models.TextField(default=None)
+    polarity = models.FloatField(null=True, blank=True, default=None)
 
     #Cada usuario puede acceder a todos los alojamientos disponibles
     #user = models.ManyToManyField(User,blank=True)
@@ -80,13 +81,14 @@ class Stay(models.Model):
 class Review(models.Model):
 
     id_review = models.CharField(max_length=20, primary_key=True) 
-    costumer_name =  models.CharField(max_length=30) 
-    nationality = models.CharField(max_length=30)                
+    costumer_name =  models.CharField(max_length=40) 
+    nationality = models.CharField(max_length=60)                
     comment = models.TextField()
-    room_type = models.CharField(max_length=50)
-    number_nights = models.CharField(max_length=30)
-    date_review = models.CharField(max_length=30)
+    room_type = models.CharField(max_length=70)
+    number_nights = models.CharField(max_length=50)
+    date_review = models.CharField(max_length=40)
     client_type = models.CharField(max_length=50)
+    polarity = models.FloatField(null=True, blank=True, default=None)
     stay_id = models.ForeignKey('Stay', on_delete= models.CASCADE)
 
     def __str__(self):
