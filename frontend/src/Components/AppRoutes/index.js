@@ -1,16 +1,16 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { Routes, Route } from "react-router-dom"
 import Analisis from "../../Pages/Analisis"
 import Comparar from "../../Pages/Comparar"
-import Principal from "../../Pages/Principal"
+import Estadisticas from "../../Pages/Estadisticas"
+
 function AppRoutes() {
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path = "/" element={<Analisis />}></Route>
-                <Route path = "/analisis" element={<Analisis />}></Route>
-                <Route path = "/comparar" element={<Comparar />}></Route>
-            </Routes>
-        </BrowserRouter>
+        <Routes>
+            <Route path = "/" element={<Analisis />}></Route>
+            <Route path = "/analisis" element={<Analisis />}></Route>
+            <Route path = "/comparar" element={<Comparar />}></Route>
+            <Route path = "/analisis/:id" element={<Estadisticas />}></Route>
+        </Routes>
     );
 }
 export default AppRoutes

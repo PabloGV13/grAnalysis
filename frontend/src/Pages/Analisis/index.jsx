@@ -44,6 +44,14 @@ function Analisis() {
                         render: value => <a href={value} target="_blank">{value}</a> 
                     },
                     {
+                        title: 'Localización',
+                        dataIndex: "location"
+                    },
+                    {
+                        title: 'Puntucación',
+                        dataIndex: "polarity"
+                    },
+                    {
                         title: 'Análisis',
                         dataIndex: "stay_id",
                         render: link => <Link to={`/analisis/${link}`}><Button variant="link"> <FileSearchOutlined /> </Button></Link>

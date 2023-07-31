@@ -87,6 +87,7 @@ class Review(models.Model):
     room_type = models.CharField(max_length=70)
     number_nights = models.CharField(max_length=50)
     date_review = models.CharField(max_length=40)
+    date_entry = models.CharField(max_length=40)
     client_type = models.CharField(max_length=50)
     polarity = models.FloatField(null=True, blank=True, default=None)
     stay_id = models.ForeignKey('Stay', on_delete= models.CASCADE)

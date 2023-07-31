@@ -19,6 +19,8 @@ from datetime import date
 from bs4 import BeautifulSoup
 from datetime import datetime
 import os
+import tqdm
+import multiprocessing
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'granalysis.settings'
@@ -39,7 +41,7 @@ def get_keyword(string):
     rake = Rake()
     keywords = rake.apply(string)
     if len(keywords) > 0:
-        keyword = keywords[0]
+        keyword = keywords[0][0]
     else:  
         keyword = ""
     return keyword
@@ -54,7 +56,7 @@ def get_sentiment_analysis(url):
     review_list = Review.objects.filter(stay_id=id)
 
     
-    for review in review_list:
+    for review in tqdm.tqdm(review_list):
 
         tokenizer = AutoTokenizer.from_pretrained(MODEL)
         config = AutoConfig.from_pretrained(MODEL)
@@ -89,41 +91,46 @@ def get_sentiment_analysis(url):
             if keyword_list.count(keyword) == 0:
 
                 comment_list = review_list.values_list('comment',flat=True)
+                
                 for comment in comment_list:
-                    frecuency += comment.str.count(keyword)
+                    frecuency += comment.count(keyword)
                 
                 newKeyword = Keyword(word=keyword,
                                 polarity=polarity_, 
                                 frecuency=frecuency, 
                                 id_review=review)
-                newKeyword.save()
+                
+                newKeyword = {
+                    "word": keyword,
+                    "polarity": polarity_,
+                    "frecuency": frecuency,
+                    "id_review": review
+                    }
+                
+                keyword_list.append(newKeyword)
+                #newKeyword.save()
 
             else:
 
                 Keyword_object = Keyword.objects.get(word=keyword)
                 current_polarity = Keyword_object.polarity
-                new_polarity = np.round(float((current_polarity + polarity_)/2),4)
+                new_polarity = np.round(float((current_polarity + polarity_)/2),4) ###################
                 Keyword_object.polarity = new_polarity
-                Keyword_object.save()
-
-
+                #Keyword_object.save()
                 
         
         review_polarity = float(review_polarity/len(sentences))
         review.polarity = review_polarity
-        review.save()
+        #review.save()
+        
 
-       
         print(review_polarity)
 
     stay_object = Stay.objects.get(stay_id=id)
     stay_polarity = get_stay_polarity(id)
     stay_object.polarity = stay_polarity
-    stay_object.save()
-    
-        
-        
-    return (review_polarity,keyword_list,polarity_list,frecuency)
+    #stay_object.save()
+    #return (review_polarity,keyword_list,polarity_list,frecuency)
 
 
 def stay_is_reviewed(url):
@@ -459,9 +466,9 @@ def get_data(url):
     # today_date = datetime.strftime("%d/%m%Y")
     df.to_csv(f"stay_reviews/{pagename}"+".csv", sep = ";", index=False) 
 
-arguments = sys.argv
-url = arguments[1]
-get_data(url)
+#arguments = sys.argv
+#url = arguments[1]
+#get_data(url)
 
 # r = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
 # bsoup = BeautifulSoup(r.text, 'html.parser')
@@ -574,3 +581,6 @@ get_data(url)
 # today_date = date.today()
 # #today_date = datetime.strftime("%d/%m%Y")
 # df.to_csv(f"stay_reviews/{pagename}"+".csv", sep = ";", index=False)
+
+url ="https://www.booking.com/hotel/es/casa-nautilus.es.html"
+get_sentiment_analysis(url)

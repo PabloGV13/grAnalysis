@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework import status, generics, permissions
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import get_user_model, login, logout
 from .models import Stay, Review, Keyword,User
 from .validations import custom_validation, validate_email, validate_password, validate_username
@@ -56,12 +56,15 @@ class UserView(CustomAPIView):
 class StayView(CustomAPIView):
     permission_classes =  (permissions.AllowAny,)
 
-    def get(self, request): 
-        data = []
-        stay_list = Stay.objects.values()
-        for stay in stay_list: data.append(stay)
-        return Response(data, status=status.HTTP_200_OK)
+    def getAllStays(self, request): 
+        stays = Stay.objects.all()
+        serializer = StaySerializer(stays, many = True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def geStay(self, request, id):
+        stay = get_object_or_404(Stay,stay_id=id)
+        serializer = StaySerializer(stay)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ReviewView(APIView):
     permission_classes =  (permissions.AllowAny,)
@@ -71,14 +74,24 @@ class ReviewView(APIView):
         review_list = Review.objects.all()
         for review in review_list: data.append(review)
         return Response(data, status=status.HTTP_200_OK)
-    #(lista de reviews para la pagina principal de analisis)
-    #
-
-#class Keyword
     
-    #def get_polarity(self,request):
+    def get_review_numbernights(self,request):
+        dict = {}
+        numbernights_list = Review.objects.values_list('number_nights',flat=True)
+        for numbernight in numbernights_list:
+            if numbernight in dict:
+                dict[numbernight]+= 1
+            else:
+                dict[numbernight] = 1
+        
+        return Response(dict, status=status.HTTP_200_OK)
+    
+    
+#class KeywordView(APIView):
+    
+    #def getAllKeyWord(self,request):
     #(polaridad general del alojamiento)
-    #
+    #Admin
 
     #def get_keywords(self,request):
     #(Bag of words)

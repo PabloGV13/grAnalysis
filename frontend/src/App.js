@@ -8,6 +8,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import PageContent from './Components/PageContent';
 import SideMenu from './Components/SideMenu';
+import { BrowserRouter } from "react-router-dom";
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -16,7 +17,7 @@ axios.defaults.baseURL = "http://127.0.0.1:8000";
 
 function App() {
 
-  const [currentUser, setCurrentUser] = useState();
+  const [currentUser, setCurrentUser] = useState(false);
   const [registrationToggle, setRegistrationToggle] = useState(false);
   const handleClick = () => {
     setRegistrationToggle(!registrationToggle);
@@ -81,7 +82,7 @@ function App() {
       "/api/logout",
       {withCredentials: true}
     ).then(function(res) {
-      setCurrentUser(false)
+      setCurrentUser(false);
     });
   }
   
@@ -94,18 +95,21 @@ function App() {
             <Navbar.Toggle/>
             <Navbar.Collapse className="justify-content-end">
               <Navbar.Text>
-                <form oneSumbit={e => sumbitLogout(e)}>
+                <form onSubmit={e => sumbitLogout(e)}>
                   <Button type="submit" vatiant="light">Log out</Button>
                 </form>
               </Navbar.Text>
             </Navbar.Collapse>
           </Container>
         </Navbar>
-          <div className="SideMenuAndPageContent">
+          {currentUser && <div className="SideMenuAndPageContent">
             {/*PAGINA PRINCIPAL DEL USUARIO*/}
-            <SideMenu></SideMenu>
-            <PageContent></PageContent> 
-          </div>
+            <BrowserRouter>
+              <SideMenu></SideMenu>
+              <PageContent></PageContent> 
+            </BrowserRouter>
+           
+          </div>}
       </div>
     );
   }
