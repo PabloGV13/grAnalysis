@@ -70,12 +70,13 @@ def get_sentiment_analysis(url):
         # tokenizer.save_pretrained(MODEL)
         
         polarity_list = []
-        keyword_list = []
+        #keyword_list = []
         review_polarity = 0
         frecuency = 0
         print(sentences)
             
         for sent in sentences:
+
             keyword = get_keyword(sent)
             
             #Modelo
@@ -88,7 +89,17 @@ def get_sentiment_analysis(url):
             print(polarity_)
             polarity_list.append(polarity_)
 
-            if keyword_list.count(keyword) == 0:
+            #if keyword_list.count(keyword) == 0:
+            try:
+
+                Keyword_object = Keyword.objects.get(word=keyword)
+                current_polarity = Keyword_object.polarity
+                new_polarity = np.round(float((0.5*current_polarity + 0.5*polarity_)),4) ################### INTERPOLACION LINEAL?
+                Keyword_object.polarity = new_polarity
+                Keyword_object.save()
+                
+            except Keyword.DoesNotExist:
+            #else:
 
                 comment_list = review_list.values_list('comment',flat=True)
                 
@@ -107,21 +118,13 @@ def get_sentiment_analysis(url):
                     "id_review": review
                     }
                 
-                keyword_list.append(newKeyword)
-                #newKeyword.save()
-
-            else:
-
-                Keyword_object = Keyword.objects.get(word=keyword)
-                current_polarity = Keyword_object.polarity
-                new_polarity = np.round(float((current_polarity + polarity_)/2),4) ###################
-                Keyword_object.polarity = new_polarity
-                #Keyword_object.save()
+                #keyword_list.append(newKeyword)
+                newKeyword.save()
                 
         
         review_polarity = float(review_polarity/len(sentences))
         review.polarity = review_polarity
-        #review.save()
+        review.save()
         
 
         print(review_polarity)
@@ -129,7 +132,7 @@ def get_sentiment_analysis(url):
     stay_object = Stay.objects.get(stay_id=id)
     stay_polarity = get_stay_polarity(id)
     stay_object.polarity = stay_polarity
-    #stay_object.save()
+    stay_object.save()
     #return (review_polarity,keyword_list,polarity_list,frecuency)
 
 
@@ -330,6 +333,7 @@ def get_data(url):
                                     room_type = "" if len(type_room) < 1 else normalize_text(type_room[0].text),
                                     number_nights = "" if len(data) < 1 else number_nights,
                                     date_review = date_new_format, 
+                                    date_entry = "" if len(data) < 1 else stay_date,
                                     client_type = "" if len(type_costumer) < 1 else normalize_text(type_costumer[0].text), 
                                     stay_id = Stay.objects.get(stay_id=id_))
                     review.save()
@@ -340,9 +344,9 @@ def get_data(url):
         r = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
         bsoup = BeautifulSoup(r.text, 'html.parser')
 
-        #name = bsoup.find("h2",class_ = "d2fee87262 pp-header__titl")
-        #name = name.text
-        #name = name.strip()
+        name = bsoup.find("h2",class_ = "d2fee87262 pp-header__titl")
+        name = name.text
+        name = name.strip()
         #print(name)
 
         ubicacion = bsoup.find("span",class_="hp_address_subtitle")
@@ -583,4 +587,5 @@ def get_data(url):
 # df.to_csv(f"stay_reviews/{pagename}"+".csv", sep = ";", index=False)
 
 url ="https://www.booking.com/hotel/es/casa-nautilus.es.html"
+get_data(url)
 get_sentiment_analysis(url)

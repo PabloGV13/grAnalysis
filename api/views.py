@@ -54,39 +54,50 @@ class UserView(CustomAPIView):
     
 
 class StayView(CustomAPIView):
-    permission_classes =  (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def getAllStays(self, request): 
         stays = Stay.objects.all()
         serializer = StaySerializer(stays, many = True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def geStay(self, request, id):
+    def getStay(self, request, id):
         stay = get_object_or_404(Stay,stay_id=id)
         serializer = StaySerializer(stay)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ReviewView(APIView):
-    permission_classes =  (permissions.AllowAny,)
-    
-    def get_reviews_data(self,request):
+    permission_classes = (permissions.IsAuthenticated,)    
+    def get_reviews_data(self,request,id):
         data = []
         review_list = Review.objects.all()
         for review in review_list: data.append(review)
         return Response(data, status=status.HTTP_200_OK)
     
-    def get_review_numbernights(self,request):
+    def get_review_numbernights(self,request,id):
         dict = {}
-        numbernights_list = Review.objects.values_list('number_nights',flat=True)
+        numbernights_list = Review.objects.filter(stay_id=id).values_list('number_nights',flat=True)
         for numbernight in numbernights_list:
             if numbernight in dict:
-                dict[numbernight]+= 1
+                dict[numbernight] += 1
             else:
                 dict[numbernight] = 1
         
         return Response(dict, status=status.HTTP_200_OK)
     
+    def get_review_client_type(self,request,id):
+        dict = {}
+        client_type_list = Review.objects.filter(stay_id=id).values_list('client_type',flat=True)
+        for client_type_ in client_type_list:
+            if client_type_ in dict:
+                dict[client_type_] += 1
+            else:
+                dict[client_type_] = 1
+        return Response(dict, status=status.HTTP_200_OK)
     
+    def get_latest_review(self,request,id):
+        lat
+        
 #class KeywordView(APIView):
     
     #def getAllKeyWord(self,request):
