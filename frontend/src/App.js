@@ -105,8 +105,8 @@ function App() {
           {currentUser && <div className="SideMenuAndPageContent">
             {/*PAGINA PRINCIPAL DEL USUARIO*/}
             <BrowserRouter>
-              <SideMenu></SideMenu>
-              <PageContent></PageContent> 
+              <SideMenu/>
+              <PageContent/>
             </BrowserRouter>
            
           </div>}

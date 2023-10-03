@@ -12,7 +12,7 @@ function Analisis() {
     
     useEffect(() => {
         setLoading(true)
-        axios.get('/api/analisis')
+        axios.get('/api/stays')
             .then(response => {
                 console.log(response)
                 setStays(response.data);
@@ -26,7 +26,7 @@ function Analisis() {
     return(
         <Container className="m-auto">
             <h1 className="fs-4 text-start">Alojamientos</h1>
-            {stays.length && <Table
+            {(stays.length != 0) && <Table
                 loading = {loading}
                 dataSource={stays}
                 columns={[

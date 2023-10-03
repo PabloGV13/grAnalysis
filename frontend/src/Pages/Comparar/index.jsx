@@ -13,7 +13,7 @@ function Comparar() {
     
     useEffect(() => {
         setLoading(true)
-        axios.get('/api/analisis')
+        axios.get('/api/stays')
             .then(response => {
                 console.log(response)
                 setStays(response.data);

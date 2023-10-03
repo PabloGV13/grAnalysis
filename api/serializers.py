@@ -33,17 +33,17 @@ class UserSerializer(serializers.ModelSerializer):
 class StaySerializer(serializers.ModelSerializer):
     class Meta:
         model = Stay
-        fields = ['name', 'url', 'location', 'polarity']
+        fields = ['stay_id','name', 'url', 'location', 'polarity']
 
 
-#class ReviewSerializer(serializers.ModelSerializer):
-#    class Meta:
-#        model = Review
-#        fields = ['id_review', 'costumer_name','nationality', 
-#        'comment', 'room_type', 'number_nights', 'room_type', 
-#        'date_review', 'client_type', 'stay_id']
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['costumer_name','nationality', 
+        'comment', 'room_type', 'number_nights',  
+        'date_review', 'date_entry', 'client_type', 'polarity']
         
-#class KeywordSerializer(serializers.ModelSerializer):
-#    class Meta:
-#        model = Keyword
-#        fields = ['id', 'word', 'polarity', 'frecuency', 'id_review']
+class KeywordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Keyword
+        fields = ['word', 'polarity', 'frecuency']

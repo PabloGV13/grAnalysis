@@ -14,6 +14,7 @@ import sys
 import re
 import requests
 import django
+from django.core.exceptions import ObjectDoesNotExist
 from unicodedata import normalize
 from datetime import date
 from bs4 import BeautifulSoup
@@ -40,10 +41,10 @@ def get_stay_polarity(id):
 def get_keyword(string):
     rake = Rake()
     keywords = rake.apply(string)
-    if len(keywords) > 0:
-        keyword = keywords[0][0]
-    else:  
+    if len(keywords) == 0:
         keyword = ""
+    else:  
+        keyword = keywords[0][0]
     return keyword
 
 def get_sentiment_analysis(url):
@@ -54,6 +55,7 @@ def get_sentiment_analysis(url):
     id = Stay.objects.get(url=url).stay_id
     #Lista de Reviews
     review_list = Review.objects.filter(stay_id=id)
+    comment_list = review_list.values_list('comment',flat=True)
 
     
     for review in tqdm.tqdm(review_list):
@@ -70,7 +72,7 @@ def get_sentiment_analysis(url):
         # tokenizer.save_pretrained(MODEL)
         
         polarity_list = []
-        #keyword_list = []
+        keyword_list = []
         review_polarity = 0
         frecuency = 0
         print(sentences)
@@ -78,6 +80,9 @@ def get_sentiment_analysis(url):
         for sent in sentences:
 
             keyword = get_keyword(sent)
+            
+
+            
             
             #Modelo
             encoded_input = tokenizer(sent, return_tensors ='pt')
@@ -91,17 +96,14 @@ def get_sentiment_analysis(url):
 
             #if keyword_list.count(keyword) == 0:
             try:
-
-                Keyword_object = Keyword.objects.get(word=keyword)
+                Keyword_object = Keyword.objects.filter(id_review__in=review_list).get(word=keyword) #y stay_id=id
                 current_polarity = Keyword_object.polarity
                 new_polarity = np.round(float((0.5*current_polarity + 0.5*polarity_)),4) ################### INTERPOLACION LINEAL?
                 Keyword_object.polarity = new_polarity
                 Keyword_object.save()
                 
-            except Keyword.DoesNotExist:
+            except ObjectDoesNotExist:
             #else:
-
-                comment_list = review_list.values_list('comment',flat=True)
                 
                 for comment in comment_list:
                     frecuency += comment.count(keyword)
@@ -110,15 +112,9 @@ def get_sentiment_analysis(url):
                                 polarity=polarity_, 
                                 frecuency=frecuency, 
                                 id_review=review)
+
                 
-                newKeyword = {
-                    "word": keyword,
-                    "polarity": polarity_,
-                    "frecuency": frecuency,
-                    "id_review": review
-                    }
-                
-                #keyword_list.append(newKeyword)
+                keyword_list.append(newKeyword)
                 newKeyword.save()
                 
         
@@ -142,7 +138,7 @@ def stay_is_reviewed(url):
     if Stay.objects.filter(url=url).exists():
         id_ = Stay.objects.get(url=url).stay_id
         if Review.objects.filter(stay_id=id_).exists():
-            is_reviewed = False
+            is_reviewed = True
     return (id_,is_reviewed)
 
 def normalize_text(string):
@@ -189,8 +185,6 @@ def get_response(offset, rows, pagename):
     x = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
     return x
 
-
-
 def get_data(url):
 
     #NORMALIZAR URL eliminando ? y posterior
@@ -211,6 +205,7 @@ def get_data(url):
     }
 
     (id_,is_reviewed) = stay_is_reviewed(url)
+    print(id)
 
     dict = {}
 
@@ -223,10 +218,14 @@ def get_data(url):
         r = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
         bsoup = BeautifulSoup(r.text, 'html.parser')
 
-        slide_info = bsoup.find_all("li", class_ = "a0661136c9")
+        slide_info = bsoup.find_all("a", attrs={"data-target":"hp-reviews-sliding"})
+        print(len(slide_info))
 
+        
         n_comments = slide_info[len(slide_info)-1].text
         n_comments = n_comments[n_comments.find('(') + 1 : n_comments.find(')')]
+        print(n_comments)
+        
         
         if(n_comments.isdigit() == False):
             number_parts = n_comments.split(".")
@@ -240,9 +239,10 @@ def get_data(url):
         pagename = url_var[0]
 
         current_comments = Review.objects.filter(stay_id=id_).count()
+        print(current_comments)
 
-        new_comments = current_comments - n_comments
-
+        new_comments = n_comments-current_comments
+        print(new_comments)
         
         
         if new_comments > 0:
@@ -255,7 +255,7 @@ def get_data(url):
                 reviews_body = bs.find_all("li", class_="review_list_new_item_block")
                 for reviewBody in reviews_body:
 
-                    id_review = reviewBody.get('data-review-url')
+                    id_review_ = reviewBody.get('data-review-url')
                     user_name = reviewBody.find_all("span", class_ = "bui-avatar-block__title")
                     nacionality = reviewBody.find_all("span", class_= "bui-avatar-block__subtitle")
                     comments_title = reviewBody.find_all("h3", class_= "c-review-block__title c-review__title--ltr")
@@ -281,6 +281,7 @@ def get_data(url):
                     stay_data = normalize_text(data[0].text)
                     number_nights = stay_data.split("·")[0].strip()
                     stay_date = stay_data.split("·")[1].strip()
+                    print(stay_date)
 
                     type_costumer = reviewBody.find_all("ul", class_= "bui-list bui-list--text bui-list--icon bui_font_caption review-panel-wide__traveller_type c-review-block__row")
                     #print(normalize_text(nacionality[0].text))
@@ -314,20 +315,20 @@ def get_data(url):
 
                     print(comment)
                 
-                    dict[i] = {
-                        "id": id_review,
-                        "cliente": normalize_text(user_name[0].text),
-                        "nacionalidad": "" if len(nacionality) < 1 else normalize_text(nacionality[0].text),
-                        "comentario_completo" : comment,                                                 
-                        "tipo de habitacion": "" if len(type_room) < 1 else normalize_text(type_room[0].text),
-                        "noches": "" if len(data) < 1 else number_nights,
-                        "fecha_alojamiento" : "" if len(data) < 1 else stay_date,
-                        "tipo_cliente": "" if len(type_costumer) < 1 else normalize_text(type_costumer[0].text),
-                        "fecha de comentario" : date_new_format
-                    }
+                    # dict[i] = {
+                    #     "id": id_review,
+                    #     "cliente": normalize_text(user_name[0].text),
+                    #     "nacionalidad": "" if len(nacionality) < 1 else normalize_text(nacionality[0].text),
+                    #     "comentario_completo" : comment,                                                 
+                    #     "tipo de habitacion": "" if len(type_room) < 1 else normalize_text(type_room[0].text),
+                    #     "noches": "" if len(data) < 1 else number_nights,
+                    #     "fecha_alojamiento" : "" if len(data) < 1 else stay_date,
+                    #     "tipo_cliente": "" if len(type_costumer) < 1 else normalize_text(type_costumer[0].text),
+                    #     "fecha de comentario" : date_new_format
+                    # }
                     i += 1
 
-                    review = Review(costumer_name = normalize_text(user_name[0].text), 
+                    review = Review(id_review=id_review_,costumer_name = normalize_text(user_name[0].text), 
                                     nationality =  "" if len(nacionality) < 1 else normalize_text(nacionality[0].text),
                                     comment = comment, 
                                     room_type = "" if len(type_room) < 1 else normalize_text(type_room[0].text),
@@ -344,7 +345,8 @@ def get_data(url):
         r = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
         bsoup = BeautifulSoup(r.text, 'html.parser')
 
-        name = bsoup.find("h2",class_ = "d2fee87262 pp-header__titl")
+        name = bsoup.find("h2",class_ = "d2fee87262 pp-header__title")
+        print(name)
         name = name.text
         name = name.strip()
         #print(name)
@@ -357,16 +359,18 @@ def get_data(url):
         # stay = Stay(name=name,url=url,location=ubicacion)
         # stay.save()
 
-        slide_info = bsoup.find_all("li", class_ = "a0661136c9")
-
+        slide_info = bsoup.find_all("a", attrs={"data-target":"hp-reviews-sliding"})
+        print(len(slide_info))
         n_comments = slide_info[len(slide_info)-1].text
         n_comments = n_comments[n_comments.find('(') + 1 : n_comments.find(')')]
+        
 
         if(n_comments.isdigit() == False):
             number_parts = n_comments.split(".")
             n_comments = number_parts[0] + number_parts[1]
 
         n_comments = int(n_comments)
+        print(n_comments)
         url_sets = url.split('/')
         url_var = url_sets[5].split('.')
 
@@ -380,7 +384,7 @@ def get_data(url):
             reviews_body = bs.find_all("li", class_="review_list_new_item_block")
             for reviewBody in reviews_body:
 
-                id_review = reviewBody.get('data-review-url')
+                id_review_ = reviewBody.get('data-review-url')
                 user_name = reviewBody.find_all("span", class_ = "bui-avatar-block__title")
                 nacionality = reviewBody.find_all("span", class_= "bui-avatar-block__subtitle")
                 comments_title = reviewBody.find_all("h3", class_= "c-review-block__title c-review__title--ltr")
@@ -397,15 +401,18 @@ def get_data(url):
                     month = date_.split("de")[1].strip()
                     date_ = date_.replace(month, str(month_es[month]))
                     date_object = datetime.strptime(date_,"%d de %m de %Y")
-                    new_format = "%d/%m/%Y"
-                    date_new_format = date_object.strftime(new_format)
-                    date_new_format = pd.to_datetime(date_new_format, dayfirst = True)
+                    date_new_format = date_object.date()
+                    #new_format = "%d/%m/%Y"
+                    #date_new_format = date_new_format.strftime(new_format)
+                    #date_new_format = pd.to_datetime(date_new_format, dayfirst = True)
+                    
                 else:
                     date_new_format = ""
             
                 stay_data = normalize_text(data[0].text)
                 number_nights = stay_data.split("·")[0].strip()
                 stay_date = stay_data.split("·")[1].strip()
+                print(stay_date)
 
                 type_costumer = reviewBody.find_all("ul", class_= "bui-list bui-list--text bui-list--icon bui_font_caption review-panel-wide__traveller_type c-review-block__row")
                 #print(normalize_text(nacionality[0].text))
@@ -441,7 +448,7 @@ def get_data(url):
                 #print("Nacionalidad del usuario de la review: " + nacionality[0].text + "\n")
             
                 dict[i] = {
-                    "id": id_review,
+                    "id": id_review_,
                     "cliente": normalize_text(user_name[0].text),
                     "nacionalidad": "" if len(nacionality) < 1 else normalize_text(nacionality[0].text),
                     "comentario_completo" : comment,                                                 
@@ -453,13 +460,14 @@ def get_data(url):
                 }
                 i += 1
 
-                review = Review(id_review = id_review, 
+                review = Review(id_review = id_review_, 
                                 costumer_name = normalize_text(user_name[0].text), 
                                 nationality =  "" if len(nacionality) < 1 else normalize_text(nacionality[0].text),
                                 comment = comment, 
                                 room_type = "" if len(type_room) < 1 else normalize_text(type_room[0].text),
                                 number_nights = "" if len(data) < 1 else number_nights,
                                 date_review = date_new_format, 
+                                date_entry = "" if len(data) < 1 else stay_date,
                                 client_type = "" if len(type_costumer) < 1 else normalize_text(type_costumer[0].text), 
                                 stay_id = Stay.objects.get(stay_id=id_))
                 review.save()  
@@ -474,118 +482,6 @@ def get_data(url):
 #url = arguments[1]
 #get_data(url)
 
-# r = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
-# bsoup = BeautifulSoup(r.text, 'html.parser')
-
-# ubicacion = bsoup.find("span",class_="hp_address_subtitle")
-# ubicacion = ubicacion.text
-# ubicacion = ubicacion.strip()
-# print(ubicacion)
-
-# slide_info = bsoup.find_all("li", class_ = "a0661136c9")
-
-# n_comments = slide_info[len(slide_info)-1].text
-# n_comments = n_comments[n_comments.find('(') + 1 : n_comments.find(')')]
-
-# if(n_comments.isdigit() == False):
-#     number_parts = n_comments.split(".")
-#     n_comments = number_parts[0] + number_parts[1]
-
-# n_comments = int(n_comments)
-# url_sets = url.split('/')
-# url_var = url_sets[5].split('.')
-
-# pagename = url_var[0]
-
-# dict = {}
-
-# i = 1
-# for offset in range(0, n_comments, 25):
-#     response = get_response(offset, 25, pagename)
-#     bs = BeautifulSoup(response.text, 'html.parser')
-
-#     reviews_body = bs.find_all("li", class_="review_list_new_item_block")
-#     for reviewBody in reviews_body:
-
-#         id_review = reviewBody.get('data-review-url')
-#         user_name = reviewBody.find_all("span", class_ = "bui-avatar-block__title")
-#         nacionality = reviewBody.find_all("span", class_= "bui-avatar-block__subtitle")
-#         comments_title = reviewBody.find_all("h3", class_= "c-review-block__title c-review__title--ltr")
-#         comments = reviewBody.find_all("span", class_= "c-review__body")
-#         type_room = reviewBody.find_all("ul", class_= "bui-list bui-list--text bui-list--icon bui_font_caption")
-        
-#         data = reviewBody.find_all("ul", class_= "bui-list bui-list--text bui-list--icon bui_font_caption c-review-block__row c-review-block__stay-date")
-#         comment_date = reviewBody.find_all(lambda tag: tag.name == 'div' and tag.get('class') == ['c-review-block__row'])
-#         comment_date = comment_date[0].find("span", class_="c-review-block__date")
-
-#         if len(comment_date) >= 1:
-#             date_ = comment_date.text.split(":")[1]
-#             date_ = date_.strip()
-#             month = date_.split("de")[1].strip()
-#             date_ = date_.replace(month, str(MONTH_ES[month]))
-#             date_object = datetime.strptime(date_,"%d de %m de %Y")
-#             new_format = "%d/%m/%Y"
-#             date_new_format = date_object.strftime(new_format)
-#             date_new_format = pd.to_datetime(date_new_format, dayfirst = True)
-#         else:
-#             date_new_format = ""
-        
-#         stay_data = normalize_text(data[0].text)
-#         number_nights = stay_data.split("·")[0].strip()
-#         stay_date = stay_data.split("·")[1].strip()
-
-#         type_costumer = reviewBody.find_all("ul", class_= "bui-list bui-list--text bui-list--icon bui_font_caption review-panel-wide__traveller_type c-review-block__row")
-#         #print(normalize_text(nacionality[0].text))
-#         comment1 = ""
-#         comment2 = ""
-#         comment3 = ""
-#         if len(comments_title)>= 1:
-#             comment1 = normalize_text(comments_title[0].text)
-#             if not comment1.endswith("."):
-#                 if comment1 != "":
-#                     comment1 = comment1 + "."
-#             if comment1 == "Esta entrada no tiene comentarios.":
-#                 comment1 = ""
-#         if len(comments) >= 1:
-#             comment2 = normalize_text(comments[0].text)
-#             if not comment2.endswith("."):
-#                 if comment2 != "":
-#                     comment2 = comment2 + "."
-#             if comment2 == "Esta entrada no tiene comentarios.":
-#                 comment2 = ""
-#         if len(comments) >= 2:
-#             comment3 = normalize_text(comments[1].text)
-#             if not comment3.endswith("."):
-#                 if comment3 != "":
-#                     comment3 = comment3 + "."
-#             if comment3 == "Esta entrada no tiene comentarios.":
-#                 comment3 = ""
-                
-#         comment = comment1 + comment2 + comment3
-#         comment = comment.strip()
-
-#         #print(comment)
-        
-#         dict[i] = {
-#             "id": id_review,
-#             "cliente": normalize_text(user_name[0].text),
-#             "nacionalidad": "" if len(nacionality) < 1 else normalize_text(nacionality[0].text),
-#             "comentario_completo" : comment,                                                 
-#             "tipo de habitacion": "" if len(type_room) < 1 else normalize_text(type_room[0].text),
-#             "noches": "" if len(data) < 1 else number_nights,
-#             "fecha_alojamiento" : "" if len(data) < 1 else stay_date,
-#             "tipo_cliente": "" if len(type_costumer) < 1 else normalize_text(type_costumer[0].text),
-#             "fecha de comentario" : date_new_format,
-#         }
-#         i += 1
-
-# df = pd.DataFrame.from_dict(dict, orient="index")
-# df.sort_values(by='fecha de comentario', ascending = False, inplace = True)
-# print(df)
-# today_date = date.today()
-# #today_date = datetime.strftime("%d/%m%Y")
-# df.to_csv(f"stay_reviews/{pagename}"+".csv", sep = ";", index=False)
-
-url ="https://www.booking.com/hotel/es/casa-nautilus.es.html"
-get_data(url)
+url ="https://www.booking.com/hotel/es/plazas-de-ca-diz-apartamentos.es.html"
+#get_data(url)
 get_sentiment_analysis(url)
