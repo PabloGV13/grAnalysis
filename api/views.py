@@ -10,10 +10,15 @@ from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.clickjacking import xframe_options_exempt
 from .models import Stay, Review, Keyword,User
 from .validations import custom_validation, validate_email, validate_password, validate_username
 from .serializers import UserSerializer, UserRegisterSerializer, UserLoginSerializer, StaySerializer, ReviewSerializer, KeywordSerializer
 from .custom_views import CustomAPIView
+from geopy.geocoders import Nominatim
+from ratelimiter import RateLimiter
+import folium
+
 
 class UserRegister(CustomAPIView):
     permission_classes = (permissions.AllowAny,)
@@ -200,6 +205,39 @@ def getBagOfWords(request,id):
     keywords = Keyword.objects.filter(id_review__in=reviews)
     bag_of_words = {keyword['word']:keyword['frecuency'] for keyword in keywords}
     return Response(bag_of_words, status=status.HTTP_200_OK)
+
+
+#STAYS MAP
+
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([permissions.AllowAny])
+@xframe_options_exempt
+def getStaysMap(request):
+    geolocator = Nominatim(user_agent="my_geocoder")
+    #reverse = RateLimiter(geolocator.reverse, min_delay_seconds=1)
+    stays = Stay.objects.all()
+    default_location = geolocator.geocode(stays[0].location)
+    if (default_location.latitude, default_location.longitude) != (None,None):
+        m = folium.Map(location=[default_location.latitude, default_location.longitude], zoom_start = 12)
+        for stay in stays:
+            stay_location = geolocator.geocode(stay.location)
+            if stay_location.latitude != None and stay_location.longitude != None:
+                folium.Marker([stay_location.latitude,stay_location.longitude], popup=stay.name).add_to(m)
+        
+        map_html = m._repr_html_()
+
+        return render(request, 'mapa.html',{'map_html': map_html})
+    
+    else:
+        return render(request, 'error.html',{'error_message':'No se puedieron obtener las coordenadas de algun alojamiento'})
+
+
+    
+
+
+
+
+
 
 
     #Admin

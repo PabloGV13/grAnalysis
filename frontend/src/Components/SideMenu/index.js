@@ -1,5 +1,5 @@
 import {Menu} from "antd"
-import {BarChartOutlined, ReconciliationOutlined} from "@ant-design/icons"
+import {BarChartOutlined, ReconciliationOutlined, CompassOutlined } from "@ant-design/icons"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState} from "react";
 
@@ -35,6 +35,11 @@ function SideMenu() {
                 label: "Comparar",
                 icon: <ReconciliationOutlined />,
                 key:"/comparar",
+            },
+            {
+                label:"Mapa",
+                icon: <CompassOutlined/>,
+                key:"/mapa"
             },
         ]}
         ></Menu>

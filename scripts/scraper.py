@@ -57,7 +57,6 @@ def get_sentiment_analysis(url):
     review_list = Review.objects.filter(stay_id=id)
     comment_list = review_list.values_list('comment',flat=True)
 
-    
     for review in tqdm.tqdm(review_list):
 
         tokenizer = AutoTokenizer.from_pretrained(MODEL)
@@ -80,9 +79,6 @@ def get_sentiment_analysis(url):
         for sent in sentences:
 
             keyword = get_keyword(sent)
-            
-
-            
             
             #Modelo
             encoded_input = tokenizer(sent, return_tensors ='pt')
@@ -356,8 +352,8 @@ def get_data(url):
         ubicacion = ubicacion.strip()
         #print(ubicacion)
 
-        # stay = Stay(name=name,url=url,location=ubicacion)
-        # stay.save()
+        #stay = Stay(name=name,url=url,location=ubicacion)
+        #stay.save()
 
         slide_info = bsoup.find_all("a", attrs={"data-target":"hp-reviews-sliding"})
         print(len(slide_info))
@@ -482,6 +478,6 @@ def get_data(url):
 #url = arguments[1]
 #get_data(url)
 
-url ="https://www.booking.com/hotel/es/plazas-de-ca-diz-apartamentos.es.html"
+url ="https://www.booking.com/hotel/es/hospederia-la-cantarera.es.html"
 #get_data(url)
 get_sentiment_analysis(url)

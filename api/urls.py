@@ -16,6 +16,7 @@ urlpatterns = [
     #Rutas para StayView
     path('stays', views.getAllStays, name = 'get-all-stays'),
     path('stays/<int:id>', views.getStay,name = 'get-stay'),
+    path('stays/map', views.getStaysMap, name= 'get-stay-map'),
     
     #Rutas para ReviewView
     path('reviews/numbernights/<int:id>', views.get_review_numbernights, name='get-review-numbernights'),

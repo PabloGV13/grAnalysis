@@ -2,6 +2,8 @@ import { Routes, Route } from "react-router-dom"
 import Analisis from "../../Pages/Analisis"
 import Comparar from "../../Pages/Comparar"
 import Estadisticas from "../../Pages/Estadisticas"
+import Comparacion from "../../Pages/Comparacion"
+import Mapa from "../../Pages/Mapa"
 
 function AppRoutes() {
     return (
@@ -10,6 +12,8 @@ function AppRoutes() {
             <Route path = "/analisis" element={<Analisis />}></Route>
             <Route path = "/comparar" element={<Comparar />}></Route>
             <Route path = "/analisis/:id" element={<Estadisticas />}></Route>
+            <Route path = "/comparar/:firstStayId/:secondStayId" element={<Comparacion />}></Route>
+            <Route path = "/mapa" element={<Mapa/>}></Route>
         </Routes>
     );
 }

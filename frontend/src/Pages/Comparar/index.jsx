@@ -5,11 +5,13 @@ import Container from "react-bootstrap/esm/Container";
 import { Link } from "react-router-dom";
 import { FileSearchOutlined } from "@ant-design/icons";
 import Button from "react-bootstrap/esm/Button";
+import { useNavigate } from "react-router-dom";
 
 function Comparar() {
     const [loading, setLoading] = useState(false);
     const [stays, setStays] = useState([]);
     const [selectedStays, setSelectedStays] = useState([]);
+    const navigate = useNavigate()
     
     useEffect(() => {
         setLoading(true)
@@ -24,13 +26,27 @@ function Comparar() {
             }); 
     }, []);
 
-    const handleStaySelection = (stayId, checked) => {
-        if (checked) {
-          setSelectedStays([...selectedStays, stayId]);
+    const handleStaySelection = (stayId) => {
+        if (selectedStays.includes(stayId)) {
+          setSelectedStays(selectedStays.filter((id) => id != stayId));
         } else {
-          setSelectedStays(selectedStays.filter((id) => id !== stayId));
+          if(selectedStays.length < 2){
+            setSelectedStays([...selectedStays,stayId]);
+          }
         }
       };
+
+    const handleClick = () => {
+        if (selectedStays.length == 2){
+            const [id1,id2] = selectedStays;
+            if(id1 < id2){
+                navigate("/comparar/"+id1+"/"+id2)
+            }
+            else{
+                navigate("/comparar/"+id2+"/"+id1)
+            }
+        }
+    };
 
     return(
         <Container className="m-auto">
@@ -53,12 +69,20 @@ function Comparar() {
                         render: value => <a href={value} target="_blank">{value}</a> 
                     },
                     {
+                        title: 'Localización',
+                        dataIndex: "location"
+                    },
+                    {
+                        title: 'Puntucación',
+                        dataIndex: "polarity"
+                    },
+                    {
                         title: '',
                         dataIndex: "stay_id",
                         render: (stayId) => (
                             <Checkbox
                                 checked={selectedStays.includes(stayId)}
-                                onChange={(e) => handleStaySelection(stayId, e.target.checked)} 
+                                onChange={() => handleStaySelection(stayId)} 
                             />
                         ),
                     },
@@ -68,6 +92,13 @@ function Comparar() {
                 }}
             >
             </Table>}
+
+            <Button onClick={handleClick} disabled={selectedStays.length !== 2}>
+                Comparar
+            </Button>
+
+            {/* {selectedStays} */}
+
 
         </Container>
     );
