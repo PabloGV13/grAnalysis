@@ -14,6 +14,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from .models import Stay, Review, Keyword,User
 from .validations import custom_validation, validate_email, validate_password, validate_username
 from .serializers import UserSerializer, UserRegisterSerializer, UserLoginSerializer, StaySerializer, ReviewSerializer, KeywordSerializer
+from .tokens import create_jwt_pair_for_user
 from .custom_views import CustomAPIView
 from geopy.geocoders import Nominatim
 from ratelimiter import RateLimiter
@@ -42,9 +43,14 @@ class UserLogin(CustomAPIView):
         serializer = UserLoginSerializer(data=data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.check_user(data)
+            tokens = create_jwt_pair_for_user(user)
             login(request, user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+            response = {"message": "Login Successfull", "is_admin": user.is_staff,"tokens": tokens}
+            return Response(data=response, status=status.HTTP_200_OK)
+        
+        return Response(data = {"message": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
+    
+
 
 class UserLogout(CustomAPIView):
     permission_classes = (permissions.AllowAny,)
@@ -72,6 +78,7 @@ def example_view(request, format=None):
         'auth': str(request.auth),  # None
     }
     return Response(content)
+
     
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])

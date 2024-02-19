@@ -9,6 +9,7 @@ import Form from 'react-bootstrap/Form';
 import PageContent from './Components/PageContent';
 import SideMenu from './Components/SideMenu';
 import { BrowserRouter } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -18,6 +19,7 @@ axios.defaults.baseURL = "http://127.0.0.1:8000";
 function App() {
 
   const [currentUser, setCurrentUser] = useState(false);
+  const [currentUserisAdmin, setCurrentUserAdmin] = useState(false)
   const [registrationToggle, setRegistrationToggle] = useState(false);
   const handleClick = () => {
     setRegistrationToggle(!registrationToggle);
@@ -31,6 +33,7 @@ function App() {
     axios.get("/api/user")
     .then(function(res){
       setCurrentUser(true);
+      console.log(res.data[0].is_staff);
     })
     .catch(function(error){
       setCurrentUser(false)
@@ -57,6 +60,9 @@ function App() {
         }
       ).then(function(res) {
         setCurrentUser(true)
+        // if(res.data[is_admin]){
+        //   setCurrentUserAdmin(true)
+        // };       
       });
     });
   }
@@ -71,7 +77,10 @@ function App() {
         password: password
       }
     ).then(function(res) {
-      setCurrentUser(true);
+      setCurrentUser(true)
+        if(res.data.is_admin){
+          setCurrentUserAdmin(true)
+        };   
     });
 
   }
@@ -103,9 +112,8 @@ function App() {
           </Container>
         </Navbar>
           {currentUser && <div className="SideMenuAndPageContent">
-            {/*PAGINA PRINCIPAL DEL USUARIO*/}
             <BrowserRouter>
-              <SideMenu/>
+              <SideMenu isAdmin={currentUserisAdmin} />
               <PageContent/>
             </BrowserRouter>
            

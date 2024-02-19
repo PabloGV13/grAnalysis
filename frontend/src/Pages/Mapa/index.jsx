@@ -21,12 +21,11 @@ function Mapa() {
     };
 
     return(
-        <Container fluid>
+        <Container>
             <iframe
                 ref={ref}
                 title="Mapa de Alojamientos"
                 src="http://127.0.0.1:8000/api/stays/map"
-                width="100%"
                 style={{width: "100%",overflow: "auto"}}
             ></iframe>
         </Container>
