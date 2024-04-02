@@ -9,7 +9,6 @@ import Form from 'react-bootstrap/Form';
 import PageContent from './Components/PageContent';
 import SideMenu from './Components/SideMenu';
 import { BrowserRouter } from "react-router-dom";
-import { Link } from 'react-router-dom';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -33,7 +32,9 @@ function App() {
     axios.get("/api/user")
     .then(function(res){
       setCurrentUser(true);
-      console.log(res.data[0].is_staff);
+      if(res.data.user.is_staff && !currentUser){
+        setCurrentUserAdmin(true)
+      };   
     })
     .catch(function(error){
       setCurrentUser(false)
@@ -60,9 +61,9 @@ function App() {
         }
       ).then(function(res) {
         setCurrentUser(true)
-        // if(res.data[is_admin]){
-        //   setCurrentUserAdmin(true)
-        // };       
+        if(res.data.is_admin){
+          setCurrentUserAdmin(true)
+        };       
       });
     });
   }
@@ -78,9 +79,10 @@ function App() {
       }
     ).then(function(res) {
       setCurrentUser(true)
-        if(res.data.is_admin){
-          setCurrentUserAdmin(true)
-        };   
+      console.log(res.data)
+      if(res.data.is_admin){
+        setCurrentUserAdmin(true)
+      };   
     });
 
   }

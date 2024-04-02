@@ -4,6 +4,7 @@ import Comparar from "../../Pages/Comparar"
 import Estadisticas from "../../Pages/Estadisticas"
 import Comparacion from "../../Pages/Comparacion"
 import Mapa from "../../Pages/Mapa"
+import Admin from "../../Pages/Admin"
 
 function AppRoutes() {
     return (
@@ -14,6 +15,7 @@ function AppRoutes() {
             <Route path = "/analisis/:id" element={<Estadisticas />}></Route>
             <Route path = "/comparar/:firstStayId/:secondStayId" element={<Comparacion />}></Route>
             <Route path = "/mapa" element={<Mapa/>}></Route>
+            <Route path = "/admin" element={<Admin/>}></Route>
         </Routes>
     );
 }

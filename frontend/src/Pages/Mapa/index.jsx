@@ -21,14 +21,12 @@ function Mapa() {
     };
 
     return(
-        <Container>
             <iframe
                 ref={ref}
                 title="Mapa de Alojamientos"
                 src="http://127.0.0.1:8000/api/stays/map"
-                style={{width: "100%",overflow: "auto"}}
+                style={{width: "190vh ", overflow: "auto", height: "80vh"}}
             ></iframe>
-        </Container>
     );
 
 

@@ -14,6 +14,8 @@ import { Pie } from "react-chartjs-2";
 function Comparacion() {
   
     const firstStayId = useParams();
+    const secondStayId = useParams();
+
     const [stay1, setStay1] = useState([]); 
     const [numbernights1, setnumberNigths1] = useState([]);
     const [clienttype1, setClientType1] = useState([]);
@@ -26,6 +28,8 @@ function Comparacion() {
     const [bagofwords1, setBagOfWords1] = useState([]);
     
     useEffect(() => {
+
+        console.log(secondStayId)
         Promise.all([
             axios.get('/api/stays/'+firstStayId.id),
             axios.get('/api/reviews/numbernights/'+firstStayId.id),

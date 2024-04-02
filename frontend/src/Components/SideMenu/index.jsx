@@ -1,5 +1,5 @@
 import {Menu} from "antd"
-import {BarChartOutlined, ReconciliationOutlined, CompassOutlined } from "@ant-design/icons"
+import {BarChartOutlined, ReconciliationOutlined, CompassOutlined, SettingOutlined} from "@ant-design/icons"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState} from "react";
 
@@ -11,12 +11,14 @@ function SideMenu(props) {
 
     useEffect(() => {
         const pathName = location.pathname;
-        setSelectedKeys(pathName);
+        setSelectedKeys(pathName);  
     }, [location.pathname]);
+
+    
 
     const navigate = useNavigate();
 
-    const items = [
+    let items = [
         {
             label:"Análisis",
             icon:<BarChartOutlined />,
@@ -34,18 +36,16 @@ function SideMenu(props) {
         },
     ];
 
-    if(isAdmin)
-        items.push([{
-            label:"Mapa admin 1",
-            icon: <CompassOutlined/>,
-            key:"/mapa"
-        },
-        {
-            label:"Mapa admin 2",
-            icon: <CompassOutlined/>,
-            key:"/mapa"
-        }
-    ]);
+    if(isAdmin){
+        items = [
+            ...items, 
+            {
+                label:"Administración",
+                icon: <SettingOutlined/>,
+                key:"/admin"
+            },
+        ];
+    }
 
     return (
     <div className="SideMenu">

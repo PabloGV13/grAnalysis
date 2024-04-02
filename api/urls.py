@@ -13,13 +13,17 @@ urlpatterns = [
     path('admin', views.AdminViewAnalysis.as_view(), name='admin'),
 
     
-    #Ruta de usuario
-    path('usuario', views.example_view, name='usuario'),    
+    #Rutas de usuario 
+    path('users', views.getAllUsers, name = 'get-all-users'),  
+    path('delete/user/<int:id>', views.deleteUser, name = 'delete-user'),
     
     #Rutas para StayView
     path('stays', views.getAllStays, name = 'get-all-stays'),
     path('stays/<int:id>', views.getStay,name = 'get-stay'),
-    path('stays/map', views.getStaysMap, name= 'get-stay-map'),
+    path('stays/map', views.getStaysMap, name = 'get-stay-map'),
+    path('stays/post_request_stay', views.postRequestedStay, name = 'post-requested-stay'), 
+    path('stays/get_request_stay', views.getRequestedStay, name = 'get-request-stay'),
+    path('stays/post_stay_analysis/<int:id>', views.postStayAnalysis, name = 'get-request-stay'),
     
     #Rutas para ReviewView
     path('reviews/numbernights/<int:id>', views.get_review_numbernights, name='get-review-numbernights'),

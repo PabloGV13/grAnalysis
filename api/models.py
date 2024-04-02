@@ -68,6 +68,7 @@ class Stay(models.Model):
     name = models.CharField(max_length=200, unique=True)
     url = models.TextField()
     location = models.TextField(default=None)
+    is_analysed = models.BooleanField(default=False)
     polarity = models.FloatField(null=True, blank=True, default=None)
 
     #Cada usuario puede acceder a todos los alojamientos disponibles

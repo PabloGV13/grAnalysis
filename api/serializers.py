@@ -10,7 +10,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         model = UserModel
         fields = ['username','email','password']
     def create(self, clean_data):
-        user_obj = UserModel.objects.create_user(email=clean_data['email'],password=clean_data['password'])
+        user_obj = UserModel.objects.create_user(username=clean_data['username'],email=clean_data['email'],password=clean_data['password'])
         user_obj.username = clean_data['username']
         user_obj.save()
         return user_obj
@@ -28,12 +28,12 @@ class UserLoginSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
-        fields = ['username','email','is_staff']
+        fields = ['user_id','username','email','is_staff']
 
 class StaySerializer(serializers.ModelSerializer):
     class Meta:
         model = Stay
-        fields = ['stay_id','name', 'url', 'location', 'polarity']
+        fields = ['stay_id', 'name', 'url', 'location', 'polarity']
 
 
 class ReviewSerializer(serializers.ModelSerializer):

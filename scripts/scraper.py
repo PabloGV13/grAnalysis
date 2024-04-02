@@ -137,6 +137,19 @@ def stay_is_reviewed(url):
             is_reviewed = True
     return (id_,is_reviewed)
 
+def normalize_url(string):
+    s = string.strip()
+    url_ = s.split('?')
+    url = url_[0]
+
+    if url.startswith('https://www.booking.com/') and url.endswith('html'):
+        return url
+    else:
+        return "URL invalida"
+    
+    
+
+
 def normalize_text(string):
     #funcion para normalizar el texto antes de incorporarlo al dataframe
 
@@ -181,9 +194,47 @@ def get_response(offset, rows, pagename):
     x = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
     return x
 
+def stay_data(url):
+    r = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
+    bsoup = BeautifulSoup(r.text, 'html.parser')
+
+    name = bsoup.find("h2",class_ = "d2fee87262 pp-header__title")
+    #print(name)
+    name = name.text
+    name = name.strip()
+    #print(name)
+
+    ubicacion = bsoup.find("span",class_="hp_address_subtitle")
+    ubicacion = ubicacion.text
+    ubicacion = ubicacion.strip()
+    #print(ubicacion)
+
+    #stay = Stay(name=name,url=url,location=ubicacion)
+    #stay.save()
+
+
+def create_new_stay(url):
+    r = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
+    bsoup = BeautifulSoup(r.text, 'html.parser')
+
+    name = bsoup.find("h2",class_ = "d2fee87262 pp-header__title")
+    print(name)
+    name = name.text
+    name = name.strip()
+    #print(name)
+
+    ubicacion = bsoup.find("span",class_="hp_address_subtitle")
+    ubicacion = ubicacion.text
+    ubicacion = ubicacion.strip()
+    #print(ubicacion)
+
+    stay = Stay(name=name,url=url,location=ubicacion)
+    stay.save()
+
 def get_data(url):
 
-    #NORMALIZAR URL eliminando ? y posterior
+    #NORMALIZAR URL 
+    url = normalize_url(url)
 
     month_es = {
         "enero" : 1,
@@ -203,14 +254,12 @@ def get_data(url):
     (id_,is_reviewed) = stay_is_reviewed(url)
     print(id)
 
-    dict = {}
-
     #Si se ha escrapapeado:
 
     if is_reviewed:
         #recent_comment = Review.objects.filter(stay_id=id_).order_by("date_review").first()
         #latest_date = recent_comment.date_review
-
+        
         r = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
         bsoup = BeautifulSoup(r.text, 'html.parser')
 
@@ -468,16 +517,4 @@ def get_data(url):
                                 stay_id = Stay.objects.get(stay_id=id_))
                 review.save()  
         
-    df = pd.DataFrame.from_dict(dict, orient="index")
-    #df.sort_values(by='fecha de comentario', ascending = False, inplace = True)  
-    # today_date = date.today()
-    # today_date = datetime.strftime("%d/%m%Y")
-    df.to_csv(f"stay_reviews/{pagename}"+".csv", sep = ";", index=False) 
 
-#arguments = sys.argv
-#url = arguments[1]
-#get_data(url)
-
-url ="https://www.booking.com/hotel/es/hospederia-la-cantarera.es.html"
-#get_data(url)
-get_sentiment_analysis(url)

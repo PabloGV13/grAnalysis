@@ -19,7 +19,12 @@ from .custom_views import CustomAPIView
 from geopy.geocoders import Nominatim
 from ratelimiter import RateLimiter
 import folium
+import json 
+from scripts import scraper
 
+
+
+#USUARIOS
 
 class UserRegister(CustomAPIView):
     permission_classes = (permissions.AllowAny,)
@@ -60,6 +65,7 @@ class UserLogout(CustomAPIView):
         return Response(status=status.HTTP_200_OK)
     
 
+#Comprobacion de usuario actual#
 class UserView(CustomAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication,BasicAuthentication)
@@ -68,23 +74,37 @@ class UserView(CustomAPIView):
         serializer = UserSerializer(request.user)
         return Response({'user': serializer.data}, status=status.HTTP_200_OK)
     
-#Comprobacion de usuario actual#
+#Lista de usuarios
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])  #DEBERIA DE SER: IsAuthenticated
-def example_view(request, format=None):
-    content = {
-        'user': str(request.user),  # `django.contrib.auth.User` instance.
-        'auth': str(request.auth),  # None
-    }
-    return Response(content)
+def getAllUsers(request, format=None):
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
-    
+#Eliminar un usuario
+@api_view(['DELETE','GET'])
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([permissions.AllowAny])  #DEBERIA DE SER: IsAuthenticated
+def deleteUser(request, id):
+    user = User.objects.filter(user_id=id)
+    user = user[0]
+    username = user.username
+    if(user.is_staff != True):
+        user.delete()
+        return Response(data = {"message": "User deleted"}, status=status.HTTP_200_OK)
+    else:
+        return Response(data = {"message": "Invalid deletion of admin user"},status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+#ALOJAMIENTOS
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
 def getAllStays(request): 
-    stays = Stay.objects.all()
+    stays = Stay.objects.filter(is_analysed=True)
     serializer = StaySerializer(stays, many = True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -95,6 +115,52 @@ def getStay(request, id):
     stay = get_object_or_404(Stay,stay_id=id)
     serializer = StaySerializer(stay)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(('POST',))
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([permissions.AllowAny])
+def postRequestedStay(request):
+    url_ = request.data.get('url')
+    
+    
+    url = normalize_url(url_)
+    return Response({"url": url}, status=status.HTTP_200_OK)
+      
+
+    if(url == "URL invalida"):
+        return Response(data = {"message": "La URL es invalida."}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        (id_,is_reviewed) = stay_is_reviewed(url)
+        if is_reviewed:
+            return Response(data = {"message": "El alojamiento ya está registrado."}, status=status.HTTP_403_FORBIDDEN)
+        else:
+            create_new_stay(url)
+            return Response(data = {"message": "Se ha realizado la solicitud con éxito."}, status=status.HTTP_201_CREATED)
+
+@api_view(('GET',))
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([permissions.AllowAny])
+def getRequestedStay(request):
+    staysRequested = Stay.objects.filter(is_analysed=False)
+    serializer = StaySerializer(staysRequested, many = True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+@api_view(('POST',))
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([permissions.AllowAny])
+def postStayAnalysis(request, id):
+    stay = get_object_or_404(Stay, stay_id=id)
+    url = stay.url
+    
+    
+
+
+
+
+
 
 # class ReviewView(APIView):
 #     permission_classes = (permissions.IsAuthenticated,)    
