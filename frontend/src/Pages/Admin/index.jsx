@@ -166,6 +166,10 @@ function Admin() {
                                 title: 'Realizar análisis',
                                 render: (_, record) => {return <PlusCircleOutlined onClick={() => handleNewAnalysis(record.stay_id)} />;}
                             },
+                            {
+                                title: 'Rechazar solicitud',
+                                render: (_, record) => {return <DeleteOutlined onClick={() => handleDeleteStay(record.stay_id)} />;}
+                            },
                             
                         ]}
                         paginaion={{

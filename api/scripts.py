@@ -23,10 +23,6 @@ import os
 import tqdm
 import multiprocessing
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'granalysis.settings'
-django.setup()
-
 from api.models import Review,Stay,Keyword
 
 def get_stay_polarity(id):
@@ -39,7 +35,9 @@ def get_stay_polarity(id):
     return stay_polarity
 
 def get_keyword(string):
-    rake = Rake()
+    rake = Rake(
+        min_chars=3,
+    )
     keywords = rake.apply(string)
     if len(keywords) == 0:
         keyword = ""
@@ -47,12 +45,12 @@ def get_keyword(string):
         keyword = keywords[0][0]
     return keyword
 
-def get_sentiment_analysis(url):
+def get_sentiment_analysis(stay):
     MODEL = f"clampert/multilingual-sentiment-covid19"
     #MODEL = f"cardiffnlp/twitter-xlm-roberta-base-sentiment"
 
     #ID del Alojamiento del que se realiza el análisis
-    id = Stay.objects.get(url=url).stay_id
+    id = stay.stay_id
     #Lista de Reviews
     review_list = Review.objects.filter(stay_id=id)
     comment_list = review_list.values_list('comment',flat=True)
@@ -218,10 +216,9 @@ def create_new_stay(url):
     bsoup = BeautifulSoup(r.text, 'html.parser')
 
     name = bsoup.find("h2",class_ = "d2fee87262 pp-header__title")
-    print(name)
     name = name.text
     name = name.strip()
-    #print(name)
+
 
     ubicacion = bsoup.find("span",class_="hp_address_subtitle")
     ubicacion = ubicacion.text
@@ -231,10 +228,7 @@ def create_new_stay(url):
     stay = Stay(name=name,url=url,location=ubicacion)
     stay.save()
 
-def get_data(url):
-
-    #NORMALIZAR URL 
-    url = normalize_url(url)
+def get_data(stay):
 
     month_es = {
         "enero" : 1,
@@ -251,8 +245,12 @@ def get_data(url):
         "diciembre": 12     
     }
 
-    (id_,is_reviewed) = stay_is_reviewed(url)
-    print(id)
+    id_ = stay.stay_id
+    is_reviewed = stay.is_analysed
+    url = stay.url
+
+    #(id_,is_reviewed) = stay_is_reviewed(url)
+    #print(id)
 
     #Si se ha escrapapeado:
 
@@ -492,17 +490,17 @@ def get_data(url):
                 print("\nComentario numero "+ str(i) +": " + comment + "\n")
                 #print("Nacionalidad del usuario de la review: " + nacionality[0].text + "\n")
             
-                dict[i] = {
-                    "id": id_review_,
-                    "cliente": normalize_text(user_name[0].text),
-                    "nacionalidad": "" if len(nacionality) < 1 else normalize_text(nacionality[0].text),
-                    "comentario_completo" : comment,                                                 
-                    "tipo de habitacion": "" if len(type_room) < 1 else normalize_text(type_room[0].text),
-                    "noches": "" if len(data) < 1 else number_nights,
-                    "fecha_alojamiento" : "" if len(data) < 1 else stay_date,
-                    "tipo_cliente": "" if len(type_costumer) < 1 else normalize_text(type_costumer[0].text),
-                    "fecha de comentario" : date_new_format
-                }
+                #dict[i] = {
+                #    "id": id_review_,
+                #    "cliente": normalize_text(user_name[0].text),
+                #    "nacionalidad": "" if len(nacionality) < 1 else normalize_text(nacionality[0].text),
+                #    "comentario_completo" : comment,                                                 
+                #    "tipo de habitacion": "" if len(type_room) < 1 else normalize_text(type_room[0].text),
+                #    "noches": "" if len(data) < 1 else number_nights,
+                #    "fecha_alojamiento" : "" if len(data) < 1 else stay_date,
+                #    "tipo_cliente": "" if len(type_costumer) < 1 else normalize_text(type_costumer[0].text),
+                #    "fecha de comentario" : date_new_format
+                #}
                 i += 1
 
                 review = Review(id_review = id_review_, 
@@ -516,5 +514,9 @@ def get_data(url):
                                 client_type = "" if len(type_costumer) < 1 else normalize_text(type_costumer[0].text), 
                                 stay_id = Stay.objects.get(stay_id=id_))
                 review.save()  
+        stay.is_analysed = True
+        stay.save()
         
+
+string =  "https://www.booking.com/searchresults.es.html"
 

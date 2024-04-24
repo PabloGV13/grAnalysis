@@ -20,9 +20,7 @@ from geopy.geocoders import Nominatim
 from ratelimiter import RateLimiter
 import folium
 import json 
-from scripts import scraper
-
-
+from .scripts import normalize_url,stay_is_reviewed,create_new_stay, get_data, get_sentiment_analysis
 
 #USUARIOS
 
@@ -122,11 +120,7 @@ def getStay(request, id):
 @permission_classes([permissions.AllowAny])
 def postRequestedStay(request):
     url_ = request.data.get('url')
-    
-    
     url = normalize_url(url_)
-    return Response({"url": url}, status=status.HTTP_200_OK)
-      
 
     if(url == "URL invalida"):
         return Response(data = {"message": "La URL es invalida."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -145,6 +139,15 @@ def getRequestedStay(request):
     staysRequested = Stay.objects.filter(is_analysed=False)
     serializer = StaySerializer(staysRequested, many = True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['DELETE','GET'])
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([permissions.AllowAny])  #DEBERIA DE SER: IsAuthenticated
+def deleteStay(request, id):
+    stay = get_object_or_404(Stay, stay_id = id)
+    stay.delete()
+    return Response(data = {"message": "Solicitud eliminada"}, status=status.HTTP_200_OK)
+    
     
 
 
@@ -153,7 +156,12 @@ def getRequestedStay(request):
 @permission_classes([permissions.AllowAny])
 def postStayAnalysis(request, id):
     stay = get_object_or_404(Stay, stay_id=id)
-    url = stay.url
+    get_data(stay)
+    get_sentiment_analysis(stay)
+    return Response(data = {"message": "Se ha realizado el análisis con éxito."}, status=status.HTTP_200_OK)
+
+
+
     
     
 
@@ -208,7 +216,7 @@ def get_review_client_type(request,id):
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
 def get_latest_review(request,id):
-    latest_date = Review.objects.aggregate(latest_date=Max('date_review'))['latest_date']
+    latest_date = Review.objects.filter(stay_id=id).aggregate(latest_date=Max('date_review'))['latest_date']
     latest_review = Review.objects.filter(stay_id=id, date_review=latest_date).first()
     serializer = ReviewSerializer(latest_review)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -217,7 +225,7 @@ def get_latest_review(request,id):
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
 def get_oldest_review(request,id):
-    oldest_date = Review.objects.aggregate(oldest_date=Min('date_review'))['oldest_date']
+    oldest_date = Review.objects.filter(stay_id=id).aggregate(oldest_date=Min('date_review'))['oldest_date']
     oldest_review = Review.objects.filter(stay_id=id, date_review=oldest_date).first()
     serializer = ReviewSerializer(oldest_review)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -227,7 +235,7 @@ def get_oldest_review(request,id):
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
 def get_mostPostive_review(request,id):
-    positive_polarity = Review.objects.aggregate(positive_polarity=Max('polarity'))['positive_polarity']
+    positive_polarity = Review.objects.filter(stay_id=id).aggregate(positive_polarity=Max('polarity'))['positive_polarity']
     positive_review = Review.objects.filter(stay_id=id,polarity=positive_polarity).first()
     serializer = ReviewSerializer(positive_review)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -237,7 +245,7 @@ def get_mostPostive_review(request,id):
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
 def get_mostNegative_review(request,id):
-    negative_polarity = Review.objects.aggregate(negative_polarity=Min('polarity'))['negative_polarity']
+    negative_polarity = Review.objects.filter(stay_id=id).aggregate(negative_polarity=Min('polarity'))['negative_polarity']
     negative_review = Review.objects.filter(stay_id=id,polarity=negative_polarity).first()
     serializer = ReviewSerializer(negative_review)
     return Response(serializer.data, status=status.HTTP_200_OK)

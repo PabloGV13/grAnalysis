@@ -101,7 +101,7 @@ class Review(models.Model):
 class Keyword(models.Model):
 
     keyword_id = models.AutoField(primary_key=True)
-    word = models.CharField(max_length=40, unique = True)
+    word = models.CharField(max_length=40)
     polarity = models.FloatField()
     frecuency = models.IntegerField()
     id_review = models.ForeignKey('Review', on_delete= models.CASCADE)

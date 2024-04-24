@@ -24,6 +24,8 @@ urlpatterns = [
     path('stays/post_request_stay', views.postRequestedStay, name = 'post-requested-stay'), 
     path('stays/get_request_stay', views.getRequestedStay, name = 'get-request-stay'),
     path('stays/post_stay_analysis/<int:id>', views.postStayAnalysis, name = 'get-request-stay'),
+    path('delete/stay/<int:id>', views.deleteStay, name = 'delete-stay'),
+
     
     #Rutas para ReviewView
     path('reviews/numbernights/<int:id>', views.get_review_numbernights, name='get-review-numbernights'),
