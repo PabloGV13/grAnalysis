@@ -170,13 +170,13 @@ function Estadisticas(){
     return(
         <Container>
             <h1>{stay.name}</h1>
-            {/* {stay.polarity} */}
+            <h1>{stay.polarity}</h1>
             <Row>
                 <Col>
                     <Stack>
                         <div>
                             <h3>Numero de noches</h3>
-                            <PieChart data={numbernights}/>
+                            <PieChart align="center" data={numbernights}/>
                         </div>
                         <div>
                             <h3>Review mas reciente: </h3>

@@ -25,7 +25,7 @@ const PieChart = ({ data }) => {
   const chartData = generateNightsNumberChartData(labelNumberNights,valuesNumberNights);
 
   return (
-    <div className="pie-chart">
+    <div align="center" className="pie-chart">
       <Pie data={chartData} />
     </div>
   );
