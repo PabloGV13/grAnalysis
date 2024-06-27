@@ -2,6 +2,7 @@ import {Menu} from "antd"
 import {BarChartOutlined, ReconciliationOutlined, CompassOutlined, SettingOutlined} from "@ant-design/icons"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState} from "react";
+import './SideMenu.css';
 
 function SideMenu(props) {
 
@@ -50,14 +51,14 @@ function SideMenu(props) {
     return (
     <div className="SideMenu">
         <Menu 
-        className="SideMenuVertical"
-        mode="vertical"
-        onClick={(item) => {
-            navigate(item.key)
-        }}
-        selectedKeys={[selectedKeys]}
-        items={items}
-        ></Menu>
+            className="SideMenuVertical"
+            mode="vertical"
+            onClick={(item) => {
+                navigate(item.key)
+            }}
+            selectedKeys={[selectedKeys]}
+            items={items}
+            ></Menu>
     </div>
     );
 }

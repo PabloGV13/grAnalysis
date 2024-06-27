@@ -118,7 +118,6 @@ function App() {
               <SideMenu isAdmin={currentUserisAdmin} />
               <PageContent/>
             </BrowserRouter>
-           
           </div>}
       </div>
     );

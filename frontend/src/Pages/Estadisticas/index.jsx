@@ -10,10 +10,12 @@ import axios from 'axios';
 import PieChart from "../../Components/Graphics/PieChart";
 import randomcolor from 'randomcolor';
 import { Pie } from "react-chartjs-2";
+import PolarityRating from '../../Components/Graphics/PolarityRating';
  
 function Estadisticas(){
     const stay_id = useParams();
     const [stay, setStay] = useState([]); 
+    const ratingStar = stay.polarity * 5;
     const [numbernights, setnumberNigths] = useState([]);
     const [clienttype, setClientType] = useState([]);
     const [latestReview, setLatestReview] = useState([]);
@@ -24,6 +26,8 @@ function Estadisticas(){
     const [negativewords, setNegativeWords] = useState([]);
     const [bagofwords, setBagOfWords] = useState([]);
     //const [data, setData] = useState([]);
+
+    const polarity = stay.polarity != null ? stay.polarity : 0
     
     useEffect(() => {
         Promise.all([
@@ -170,20 +174,20 @@ function Estadisticas(){
     return(
         <Container>
             <h1>{stay.name}</h1>
-            <h1>{stay.polarity}</h1>
+            <PolarityRating polarity={polarity} />
             <Row>
                 <Col>
                     <Stack>
                         <div>
-                            <h3>Numero de noches</h3>
+                            <h3>Número de noches</h3>
                             <PieChart align="center" data={numbernights}/>
                         </div>
                         <div>
-                            <h3>Review mas reciente: </h3>
+                            <h3>Comentario más reciente: </h3>
                             {latestReview.costumer_name}: {latestReview.comment}
                         </div>
                         <div>
-                            <h3>Review mas positiva: </h3>
+                            <h3>Comentario más positivo: </h3>
                             {mostpositive.costumer_name}: {mostpositive.comment}
                         </div>
                     </Stack>
@@ -195,11 +199,11 @@ function Estadisticas(){
                             <PieChart data={clienttype}/>
                         </div>
                         <div>
-                            <h3>Review mas antigua: </h3>
+                            <h3>Comentario más antiguo: </h3>
                             {oldestReview.costumer_name}: {oldestReview.comment}
                         </div>
                         <div>
-                            <h3>Review mas negativa: </h3>
+                            <h3>Comentario más negativo: </h3>
                             {mostnegative.costumer_name}: {mostnegative.comment}
                         </div>
                     </Stack>

@@ -20,12 +20,24 @@ from geopy.geocoders import Nominatim
 from ratelimiter import RateLimiter
 import folium
 import json 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from .scripts import normalize_url,stay_is_reviewed,create_new_stay, get_data, get_sentiment_analysis
 
 #USUARIOS
 
 class UserRegister(CustomAPIView):
     permission_classes = (permissions.AllowAny,)
+
+    @swagger_auto_schema(
+        operation_description="Registrar un nuevo usuario.",
+        request_body=UserRegisterSerializer,
+        responses={
+            201: UserRegisterSerializer,
+            400: 'Invalid request'
+        }
+    )
+
     def post(self, request):
         clean_data = custom_validation(request.data)
         serializer = UserRegisterSerializer(data=clean_data)
@@ -39,6 +51,21 @@ class UserLogin(CustomAPIView):
     permission_classes = (permissions.AllowAny,)
     authentication_classes = (SessionAuthentication,)
 
+    @swagger_auto_schema(
+        operation_description="Iniciar sesión de usuario.",
+        request_body=UserLoginSerializer,
+        responses={
+            200: openapi.Response('Login Successful', schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    'is_admin': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                    'tokens': openapi.Schema(type=openapi.TYPE_OBJECT),
+                }
+            )),
+            400: 'Invalid email or password'
+        }
+    )
     def post(self, request):
         data = request.data
         assert validate_email(data)
@@ -58,6 +85,13 @@ class UserLogin(CustomAPIView):
 class UserLogout(CustomAPIView):
     permission_classes = (permissions.AllowAny,)
     authentication_classes = ()
+
+    @swagger_auto_schema(
+        operation_description="Cerrar sesión del usuario.",
+        responses={
+            200: 'Logout Successful'
+        }
+    )
     def post(self, request):
         logout(request)
         return Response(status=status.HTTP_200_OK)
@@ -68,11 +102,28 @@ class UserView(CustomAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication,BasicAuthentication)
 
+    @swagger_auto_schema(
+        operation_description="Obtener datos del usuario actual.",
+        responses={
+            200: openapi.Response('User Data', UserSerializer),
+            403: 'Forbidden'
+        }
+    )
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response({'user': serializer.data}, status=status.HTTP_200_OK)
     
+
+
 #Lista de usuarios
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener todos los usuarios.",
+    responses={
+        200: UserSerializer(many=True),
+        403: 'Forbidden'
+    }
+)
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])  #DEBERIA DE SER: IsAuthenticated
@@ -81,7 +132,18 @@ def getAllUsers(request, format=None):
     serializer = UserSerializer(users, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+
 #Eliminar un usuario
+@swagger_auto_schema(
+    method='delete',
+    operation_description="Eliminar un usuario por ID.",
+    responses={
+        200: 'User deleted',
+        401: 'Invalid deletion of admin user',
+        404: 'Not found'
+    }
+)
 @api_view(['DELETE','GET'])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])  #DEBERIA DE SER: IsAuthenticated
@@ -98,6 +160,17 @@ def deleteUser(request, id):
 
 
 #ALOJAMIENTOS
+
+#Lista de alojamientos
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener todos los alojamientos analizados.",
+    responses={
+        200: StaySerializer(many=True),
+        403: 'Forbidden request',
+        404: 'Not found'
+    }
+)
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -106,6 +179,15 @@ def getAllStays(request):
     serializer = StaySerializer(stays, many = True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+#Obtener un alojamiento
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener un alojamiento por ID.",
+    responses={
+        200: StaySerializer,
+        404: 'Not found'
+    }
+)
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -114,7 +196,22 @@ def getStay(request, id):
     serializer = StaySerializer(stay)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-
+#Publicar una solicitud de alojamiento
+@swagger_auto_schema(
+    method='post',
+    operation_description="Solicitar un nuevo alojamiento.",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'url': openapi.Schema(type=openapi.TYPE_STRING, description='Stay URL')
+        }
+    ),
+    responses={
+        201: openapi.Response('Request made successfully.'),
+        401: openapi.Response('Invalid URL'),
+        403: openapi.Response('Stay request')
+    }
+)
 @api_view(('POST',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -132,7 +229,16 @@ def postRequestedStay(request):
             create_new_stay(url)
             return Response(data = {"message": "Se ha realizado la solicitud con éxito."}, status=status.HTTP_201_CREATED)
 
-@api_view(('GET',))
+#Obtener Solicitudes de alojamientos
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener todas las solicitudes de alojamientos no analizados.",
+    responses={
+        200: StaySerializer(many=True),
+        404: 'Not found'
+    }
+)
+@api_view(['GET'])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
 def getRequestedStay(request):
@@ -140,6 +246,15 @@ def getRequestedStay(request):
     serializer = StaySerializer(staysRequested, many = True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+#Eliminar solicitud alojamiento
+@swagger_auto_schema(
+    method='delete',
+    operation_description="Eliminar una solicitud de alojamiento por ID.",
+    responses={
+        200: openapi.Response('Request deleted'),
+        404: 'Not found'
+    }
+)
 @api_view(['DELETE','GET'])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])  #DEBERIA DE SER: IsAuthenticated
@@ -149,8 +264,15 @@ def deleteStay(request, id):
     return Response(data = {"message": "Solicitud eliminada"}, status=status.HTTP_200_OK)
     
     
-
-
+#Realizar analisis del alojamiento
+@swagger_auto_schema(
+    method='post',
+    operation_description="Realizar el análisis de un alojamiento por ID.",
+    responses={
+        200: openapi.Response('Analysis performed successfully.'),
+        404: 'Not found'
+    }
+)
 @api_view(('POST',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -173,7 +295,18 @@ def postStayAnalysis(request, id):
 # class ReviewView(APIView):
 #     permission_classes = (permissions.IsAuthenticated,)    
 
+
+
+
 #Diccionario con el numero de noches(diagrama tarta)
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener un diccionario con el número de noches de las reviews.",
+    responses={
+        200: openapi.Response('Dictionary with the number of nights.'),
+        404: 'Not found'
+    }
+)
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -194,6 +327,14 @@ def get_review_numbernights(request,id):
 
 
 #Diccionario con el tipo de cliente (diagrama tarta)
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener un diccionario con el tipo de clientes.",
+    responses={
+        200: openapi.Response('Dictionary with types of clients'),
+        404: 'Not found'
+    }
+)
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -212,6 +353,15 @@ def get_review_client_type(request,id):
     
     return Response(dict, status=status.HTTP_200_OK)
 
+#Obtener la review más reciente
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener la review más reciente.",
+    responses={
+        200: ReviewSerializer,
+        404: 'Not found'
+    }
+)
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -221,6 +371,16 @@ def get_latest_review(request,id):
     serializer = ReviewSerializer(latest_review)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+#Obtener la review más antigua
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener la review más antigua.",
+    responses={
+        200: ReviewSerializer,
+        404: 'Not found'
+    }
+)
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -231,6 +391,16 @@ def get_oldest_review(request,id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+
+#Obtener la review más positiva
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener la review con una polaridad más positiva.",
+    responses={
+        200: ReviewSerializer,
+        404: 'Not found'
+    }
+)
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -241,6 +411,15 @@ def get_mostPostive_review(request,id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+#Obtener la review más negativa
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener la review con una polaridad más negativa.",
+    responses={
+        200: ReviewSerializer,
+        404: 'Not found'
+    }
+)
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -251,11 +430,15 @@ def get_mostNegative_review(request,id):
     return Response(serializer.data, status=status.HTTP_200_OK)
     
     
-
-# class KeywordView(APIView):
-#     permission_classes = (permissions.IsAuthenticated,)    
-
 # Palabras mas positivas
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener las 10 palabras más positivas sobre un alojamiento.",
+    responses={
+        200: KeywordSerializer,
+        404: 'Not found'
+    }
+)
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -267,6 +450,14 @@ def getTopPolarityKeyWords(request,id):
 
 
 #Palabras mas negativas
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener las 10 palabras más negativas sobre un alojamiento.",
+    responses={
+        200: KeywordSerializer,
+        404: 'Not found'
+    }
+)
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -278,6 +469,14 @@ def getLowestPolarityKeywords(request,id):
 
 
 #BAG OF WORDS
+@swagger_auto_schema(
+    method='get',
+    operation_description="Obtener un diccionario con las palabras más frecuentes.",
+    responses={
+        200: openapi.Response('Dictionary with the most frequent words'),
+        404: 'Not found'
+    }
+)
 @api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
@@ -290,30 +489,37 @@ def getBagOfWords(request,id):
 
 #STAYS MAP
 
+
+@api_view(('GET',))
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([permissions.AllowAny])
 @xframe_options_exempt
 def getStaysMap(request):
     geolocator = Nominatim(user_agent="my_geocoder")
-    #reverse = RateLimiter(geolocator.reverse, min_delay_seconds=1)
     stays = Stay.objects.all()
+    
+    if not stays:
+        return render(request, 'error.html', {'error_message': 'No hay alojamientos disponibles.'})
+
     default_location = geolocator.geocode(stays[0].location)
-    if (default_location.latitude, default_location.longitude) != (None,None):
-        m = folium.Map(location=[default_location.latitude, default_location.longitude], zoom_start = 12)
-        for stay in stays:
+    
+    if default_location is None or (default_location.latitude, default_location.longitude) == (None, None):
+        return render(request, 'error.html', {'error_message': 'No se pudo obtener la ubicación del alojamiento predeterminado.'})
+
+    m = folium.Map(location=[default_location.latitude, default_location.longitude], zoom_start=12)
+    
+    for stay in stays:
+        try:
             stay_location = geolocator.geocode(stay.location)
-            if stay_location.latitude != None and stay_location.longitude != None:
-                folium.Marker([stay_location.latitude,stay_location.longitude], popup=stay.name).add_to(m)
-        
-        map_html = m._repr_html_()
+            if stay_location and stay_location.latitude and stay_location.longitude:
+                folium.Marker([stay_location.latitude, stay_location.longitude], popup=stay.name).add_to(m)
+            else:
+                print(f"Ubicación no encontrada para: {stay.name}")
+        except Exception as e:
+            print(f"Error al geocodificar la ubicación para: {stay.name}, error: {e}")
 
-        return render(request, 'mapa.html',{'map_html': map_html})
-    
-    else:
-        return render(request, 'error.html',{'error_message':'No se puedieron obtener las coordenadas de algun alojamiento'})
-
-
-    
+    map_html = m._repr_html_()
+    return render(request, 'mapa.html', {'map_html': map_html})
 
 
 

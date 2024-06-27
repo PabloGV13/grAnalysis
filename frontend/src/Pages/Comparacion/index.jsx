@@ -10,6 +10,7 @@ import axios from 'axios';
 import PieChart from "../../Components/Graphics/PieChart";
 import randomcolor from 'randomcolor';
 import { Pie } from "react-chartjs-2";
+import PolarityRating from '../../Components/Graphics/PolarityRating';
 
 function Comparacion() {
   
@@ -36,6 +37,10 @@ function Comparacion() {
     const [positivewords2, setPositiveWords2] = useState([]);
     const [negativewords2, setNegativeWords2] = useState([]);
     const [bagofwords2, setBagOfWords2] = useState([]);
+
+    const polarity1 = stay1.polarity != null ? stay1.polarity : 0
+    const polarity2 = stay2.polarity != null ? stay2.polarity : 0
+
     
     useEffect(() => {
 
@@ -97,17 +102,17 @@ function Comparacion() {
             <Row>
                 <Col>
                     <h1>{stay1.name}</h1>
-                    <h1>{stay1.polarity} </h1>
+                    <PolarityRating polarity={polarity1} />
                     <div>
-                        <h3>Numero de noches</h3>
+                        <h3>Número de noches</h3>
                         <PieChart data={numbernights1}/>
                     </div>
                     <div>
-                        <h3>Review mas reciente: </h3>
+                        <h3>Comentario más reciente: </h3>
                         {latestReview1.costumer_name}: {latestReview1.comment}
                     </div>
                     <div>
-                        <h3>Review mas positiva: </h3>
+                        <h3>Comentario más positivo: </h3>
                         {mostpositive1.costumer_name}: {mostpositive1.comment}
                     </div>
                     <div>
@@ -115,28 +120,28 @@ function Comparacion() {
                         <PieChart data={clienttype1}/>
                     </div>
                     <div>
-                        <h3>Review mas antigua: </h3>
+                        <h3>Comentario más antiguo: </h3>
                         {oldestReview1.costumer_name}: {oldestReview1.comment}
                     </div>
                     <div>
-                        <h3>Review mas negativa: </h3>
+                        <h3>Comentario más negativo: </h3>
                         {mostnegative1.costumer_name}: {mostnegative1.comment}
                     </div>
 
                 </Col>               
                 <Col>
                     <h1>{stay2.name}</h1>
-                    <h1>{stay2.polarity} </h1>
+                    <PolarityRating polarity={polarity2} />
                     <div>
-                        <h3>Numero de noches</h3>
+                        <h3>Número de noches</h3>
                         <PieChart data={numbernights2}/>
                     </div>
                     <div>
-                        <h3>Review mas reciente: </h3>
+                        <h3>Comentario más reciente: </h3>
                         {latestReview2.costumer_name}: {latestReview2.comment}
                     </div>
                     <div>
-                        <h3>Review mas positiva: </h3>
+                        <h3>Comentario más positivo: </h3>
                         {mostpositive2.costumer_name}: {mostpositive2.comment}
                     </div>
                     <div>
@@ -144,11 +149,11 @@ function Comparacion() {
                         <PieChart data={clienttype2}/>
                     </div>
                     <div>
-                        <h3>Review mas antigua: </h3>
+                        <h3>Comentario más antiguo: </h3>
                         {oldestReview2.costumer_name}: {oldestReview2.comment}
                     </div>
                     <div>
-                        <h3>Review mas negativa: </h3>
+                        <h3>Comentario más negativo: </h3>
                         {mostnegative2.costumer_name}: {mostnegative2.comment}
                     </div>
 

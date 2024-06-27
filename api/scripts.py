@@ -125,7 +125,6 @@ def get_sentiment_analysis(stay):
     stay_object.save()
     #return (review_polarity,keyword_list,polarity_list,frecuency)
 
-
 def stay_is_reviewed(url):
     is_reviewed = False
     id_ = 0
@@ -145,9 +144,6 @@ def normalize_url(string):
     else:
         return "URL invalida"
     
-    
-
-
 def normalize_text(string):
     #funcion para normalizar el texto antes de incorporarlo al dataframe
 
@@ -388,15 +384,15 @@ def get_data(stay):
         r = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
         bsoup = BeautifulSoup(r.text, 'html.parser')
 
-        name = bsoup.find("h2",class_ = "d2fee87262 pp-header__title")
-        print(name)
-        name = name.text
-        name = name.strip()
+        #name = bsoup.find("h2",class_ = "d2fee87262 pp-header__title")
+        #print(name)
+        #name = name.text
+        #name = name.strip()
         #print(name)
 
-        ubicacion = bsoup.find("span",class_="hp_address_subtitle")
-        ubicacion = ubicacion.text
-        ubicacion = ubicacion.strip()
+        #ubicacion = bsoup.find("span",class_="hp_address_subtitle")
+        #ubicacion = ubicacion.text
+        #ubicacion = ubicacion.strip()
         #print(ubicacion)
 
         #stay = Stay(name=name,url=url,location=ubicacion)

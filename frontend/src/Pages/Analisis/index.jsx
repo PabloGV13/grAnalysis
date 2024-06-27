@@ -61,7 +61,7 @@ function Analisis() {
                         dataIndex: "location"
                     },
                     {
-                        title: 'Puntucación',
+                        title: 'Puntuación',
                         dataIndex: "polarity"
                     },
                     {

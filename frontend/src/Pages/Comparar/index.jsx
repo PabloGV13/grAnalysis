@@ -82,8 +82,10 @@ function Comparar() {
                         render: (stayId) => (
                             <Checkbox
                                 checked={selectedStays.includes(stayId)}
-                                onChange={() => handleStaySelection(stayId)} 
-                            />
+                                onChange={() => handleStaySelection(stayId)}
+                            >
+                               <span class="visually-hidden">Label for the input</span>
+                            </Checkbox>
                         ),
                     },
                 ]}
