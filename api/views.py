@@ -523,38 +523,7 @@ def getStaysMap(request):
 
 
 
-
-
-
-
-    #Admin
-
-    #def get_keywords(self,request):
-    #(Bag of words)
-    #
-
-    #def get_relevant_comments(self,request):
-    #(top 10 comentarios destacados)
-    #
-
-    #def get_number_nights(self,request):
-    #(diagrama con el numero de noches)
-    #
-
-    #def get_room_type(self,request):
-    #(diagrama con el los distintos tipos de habitacion)
-    #
-
-    #def get_date(self,request):
-    #(diagrama con la fecha de entrada de los residentes)
-    #
-
-    #def get_nationality(self,request):
-    #(mapa de calor de europa nacionalidades/porcentaje de nacionalidades)
-    #
-
-    
-
+#Admin
 
 class AdminViewAnalysis(CustomAPIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -598,7 +567,5 @@ class AdminViewAnalysis(CustomAPIView):
     #(mapa de calor de europa nacionalidades/porcentaje de nacionalidades)
     #
 
-
-#class UserHomePage(CustomAPIView):
     
 
