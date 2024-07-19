@@ -21,7 +21,7 @@ function Mapa() {
     };
 
     return(
-        <iframe
+        <iframe 
             ref={ref}
             title="Mapa de Alojamientos"
             src="http://127.0.0.1:8000/api/stays/map"

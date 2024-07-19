@@ -211,16 +211,15 @@ def create_new_stay(url):
     r = requests.get(url, headers={"User-Agent": "PostmanRuntime/7.28.2"})
     bsoup = BeautifulSoup(r.text, 'html.parser')
 
-    name = bsoup.find("h2",class_ = "d2fee87262 pp-header__title")
+    name = bsoup.find("h2",class_ = "af32860db5 pp-header__title")
     name = name.text
     name = name.strip()
-
 
     ubicacion = bsoup.find("span",class_="hp_address_subtitle")
     ubicacion = ubicacion.text
     ubicacion = ubicacion.strip()
     #print(ubicacion)
-
+    print("justo despues de realizar el scrapeo")
     stay = Stay(name=name,url=url,location=ubicacion)
     stay.save()
 

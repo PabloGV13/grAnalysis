@@ -9,6 +9,7 @@ import Form from 'react-bootstrap/Form';
 import PageContent from './Components/PageContent';
 import SideMenu from './Components/SideMenu';
 import { BrowserRouter } from "react-router-dom";
+import { Alert } from 'react-bootstrap';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -26,15 +27,18 @@ function App() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     {/* if(user.admin)*/}
     axios.get("/api/user")
     .then(function(res){
-      setCurrentUser(true);
       if(res.data.user.is_staff && !currentUser){
         setCurrentUserAdmin(true)
-      };   
+      } else {
+        setCurrentUserAdmin(false)
+      };
+      setCurrentUser(true);
     })
     .catch(function(error){
       setCurrentUser(false)
@@ -63,8 +67,13 @@ function App() {
         setCurrentUser(true)
         if(res.data.is_admin){
           setCurrentUserAdmin(true)
+        }else{
+          setCurrentUserAdmin(false)
         };       
-      });
+      }).catch(function(error){
+        const errorMessage = error.response?.data?.message || 'Correo invalido o ya registrado.';
+        setMessage({ text: errorMessage, type: 'danger' });
+    });
     });
   }
 
@@ -82,8 +91,13 @@ function App() {
       console.log(res.data)
       if(res.data.is_admin){
         setCurrentUserAdmin(true)
+      } else{
+        setCurrentUserAdmin(false)
       };   
-    });
+    }).catch(function(error){
+      const errorMessage = error.response?.data?.message || 'Correo o contraseña incorrecta.';
+      setMessage({ text: errorMessage, type: 'danger' });
+  });
 
   }
 
@@ -107,7 +121,7 @@ function App() {
             <Navbar.Collapse className="justify-content-end">
               <Navbar.Text>
                 <form onSubmit={e => sumbitLogout(e)}>
-                  <Button type="submit" vatiant="light">Log out</Button>
+                  <Button type="submit" vatiant="light">Cerrar sesión</Button>
                 </form>
               </Navbar.Text>
             </Navbar.Collapse>
@@ -130,32 +144,38 @@ function App() {
         <Navbar.Toggle/>
         <Navbar.Collapse className="justify-content-end">
           <Navbar.Text>
-            <Button onClick={handleClick} variant="light">{ registrationToggle ? "Login" : "Register"}</Button>
+            <Button onClick={handleClick} variant="light">{ registrationToggle ? "Inicio de sesión" : "Registro"}</Button>
           </Navbar.Text>
         </Navbar.Collapse>
       </Container>
     </Navbar>
-    {
-      registrationToggle ? (
+
+    {message && (
+      <Alert variant={message.type} onClose={() => setMessage(null)} dismissible>
+          {message.text}
+      </Alert>
+    )}
+
+    {registrationToggle ? (
         <div className="center">
           <Form onSubmit={e => sumbitRegistration(e)}>
             <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>Email address</Form.Label>
-              <Form.Control type="email" placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)}/>
+              <Form.Label>Correo electrónico</Form.Label>
+              <Form.Control type="email" placeholder="Introducir correo" value={email} onChange={e => setEmail(e.target.value)}/>
               <Form.Text className="text-muted">
-                We'll never share your email with anyone else.
+                No se compartirá el correo con nadie.
               </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicUsername">
-              <Form.Label>Username</Form.Label>
-              <Form.Control type="username" placeholder="Enter username" value={username} onChange={e => setUsername(e.target.value)}/>
+              <Form.Label>Nombre de usuario</Form.Label>
+              <Form.Control type="username" placeholder="Introducir usuario" value={username} onChange={e => setUsername(e.target.value)}/>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Label>Password</Form.Label>
-              <Form.Control type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}/>
+              <Form.Label>Contraseña</Form.Label>
+              <Form.Control type="password" placeholder="Introducir contraseña" value={password} onChange={e => setPassword(e.target.value)}/>
             </Form.Group>
-            <Button variant="priamry" type="submit">
-              Register
+            <Button variant="secondary" type="submit">
+              Registrar
             </Button>
           </Form>
         </div>
@@ -164,18 +184,18 @@ function App() {
         <div className="center">
           <Form onSubmit={e => sumbitLogin(e)}>
             <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>Email address</Form.Label>
-              <Form.Control type="email" placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)}/>
+              <Form.Label>Correo electrónico</Form.Label>
+              <Form.Control type="email" placeholder="Introducir correo" value={email} onChange={e => setEmail(e.target.value)}/>
               <Form.Text className="text-muted">
-                We'll never share your email with anyone else.
+                No se compartirá el correo con nadie.
               </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Label>Password</Form.Label>
-              <Form.Control type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}/>
+              <Form.Label>Contraseña</Form.Label>
+              <Form.Control type="password" placeholder="Introducir contraseña" value={password} onChange={e => setPassword(e.target.value)}/>
             </Form.Group>
-            <Button variant="priamry" type="submit">
-              Login
+            <Button variant="secondary" type="submit">
+              Iniciar sesión
             </Button>
           </Form>
         </div>

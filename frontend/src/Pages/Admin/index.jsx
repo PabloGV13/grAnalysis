@@ -7,6 +7,8 @@ import Col from "react-bootstrap/esm/Col";
 import { Link } from "react-router-dom";
 import { DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import Button from "react-bootstrap/esm/Button";
+import { Alert } from 'react-bootstrap'; 
+import Modal from 'react-bootstrap/Modal';
 
 function Admin() {
     
@@ -15,6 +17,11 @@ function Admin() {
     const [stays, setStays] = useState([]);
     const [requestedStays, setRequestedStays] = useState([]);
     const [analysedStays , setAnalysedStays] = useState([]);
+    const [message, setMessage] = useState(null);
+    const [showForm, setShowForm] = useState(false);
+
+    const handleCloseForm = () => setShowForm(false);
+    const handleShowForm = () => setShowForm(true);
 
     
     useEffect(() => {
@@ -39,6 +46,8 @@ function Admin() {
 
    
     const handleDeleteUser = (userId) => {
+        handleShowForm();
+        setMessage({ text: 'Se ha eliminado correctamente el usuario.', type: 'success' });
         axios.delete(`/api/delete/user/`+userId)
             .then(response => {
                 console.log(response.data);
@@ -51,10 +60,15 @@ function Admin() {
     };
 
     const handleDeleteStay = (stayId) => {
+        handleShowForm();
+        setMessage({ text: 'Se ha eliminado correctamente el alojamiento.', type: 'success' });
         axios.delete('/api/delete/stay/'+stayId)
             .then(response => {
                 console.log(response.data);
-                setStays(stays.filter(stay => stay.stay_id !== stayId));
+                // Actualizar la lista de alojamientos después de eliminar el alojamiento
+                setRequestedStays(requestedStays.filter(stay => stay.stay_id !== stayId));
+                
+
             })
             .catch(error =>  {
                 console.error('Error deleting stay', error);
@@ -62,18 +76,40 @@ function Admin() {
     };
 
     const handleNewAnalysis = (stayId) => {
+        handleShowForm();
+        setMessage({ text: 'Se ha comenzado el análisis del alojamiento.', type: 'success' });
         axios.post('/api/stays/post_stay_analysis/'+stayId)
         .then(response =>{
             console.log("Analisis solicitado correctamente:", response.data);
         })
         .catch(error => {
             console.error('Error during stay analysis', error);
+            const errorMessage = error.response?.data?.message || 'Error durante el análisis';
+            setMessage({ text: errorMessage, type: 'error' });
         });
     };
 
     return( 
+        
+        <Container className="m-auto" fluid style={{ padding: '20px' }}>
 
-        <Container className="m-auto">
+            <Modal show={showForm} onHide={handleCloseForm} animation={false} aria-labelledby="contained-modal-title-vcenter" centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Aviso</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {message && (
+                        <Alert variant={message.type === 'success' ? 'success' : 'danger'} onClose={() => setMessage(null)} dismissible>
+                            {message.text}
+                        </Alert>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={handleCloseForm}>
+                    Cerrar
+                </Button>
+                </Modal.Footer>
+            </Modal>
             <Row>
                 <Col>
                     <h1 className="fs-4 text-start">Alojamientos</h1>

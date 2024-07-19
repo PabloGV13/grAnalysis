@@ -55,7 +55,7 @@ function Comparacion() {
             axios.get('/api/reviews/mostnegative/'+firstStayId),
             axios.get('/api/keywords/toppolarity/'+firstStayId),
             axios.get('/api/keywords/lowestpolarity/'+ firstStayId),
-            //axios.get('/api/keywords/bagofwords/'+stay_id.id)
+            axios.get('/api/keywords/bagofwords/'+ firstStayId),
             axios.get('/api/stays/'+secondStayId),
             axios.get('/api/reviews/numbernights/'+secondStayId),
             axios.get('/api/reviews/clienttype/'+secondStayId),
@@ -65,7 +65,7 @@ function Comparacion() {
             axios.get('/api/reviews/mostnegative/'+secondStayId),
             axios.get('/api/keywords/toppolarity/'+secondStayId),
             axios.get('/api/keywords/lowestpolarity/'+ secondStayId),
-            //axios.get('/api/keywords/bagofwords/'+stay_id.id)
+            axios.get('/api/keywords/bagofwords/'+secondStayId)
         ]).then(response => {
             const datas = response.map(r => r.data);
             console.log(datas);
@@ -78,17 +78,17 @@ function Comparacion() {
             setMostNegative1(datas[6]);
             setPositiveWords1(datas[7]);
             setNegativeWords1(datas[8]);
-            //setBagOfWords(datas[10]);
-            setStay2(datas[9]);
-            setnumberNigths2(datas[10]);
-            setClientType2(datas[11]);
-            setLatestReview2(datas[12]);
-            setOldestReview2(datas[13]);
-            setMostPositive2(datas[14]);
-            setMostNegative2(datas[15]);
-            setPositiveWords2(datas[16]);
-            setNegativeWords2(datas[17]);
-            //setBagOfWords(datas[10]);
+            setBagOfWords1(datas[9]);
+            setStay2(datas[10]);
+            setnumberNigths2(datas[11]);
+            setClientType2(datas[12]);
+            setLatestReview2(datas[13]);
+            setOldestReview2(datas[14]);
+            setMostPositive2(datas[15]);
+            setMostNegative2(datas[16]);
+            setPositiveWords2(datas[17]);
+            setNegativeWords2(datas[18]);
+            setBagOfWords2(datas[19]);
            
             // setData(response.data);
         }).catch(error => {
@@ -97,69 +97,117 @@ function Comparacion() {
     }, []);
 
     return(
-        <Container>
+        <Container fluid style={{ padding: '20px' }}>
             
             <Row>
                 <Col>
                     <h1>{stay1.name}</h1>
                     <PolarityRating polarity={polarity1} />
-                    <div>
+                    <div className="chart-section">
                         <h3>Número de noches</h3>
                         <PieChart data={numbernights1}/>
                     </div>
-                    <div>
+                    <div className="chart-section">
                         <h3>Comentario más reciente: </h3>
                         {latestReview1.costumer_name}: {latestReview1.comment}
                     </div>
-                    <div>
+                    <div className="chart-section">
                         <h3>Comentario más positivo: </h3>
                         {mostpositive1.costumer_name}: {mostpositive1.comment}
                     </div>
-                    <div>
+                    <div className="chart-section">
                         <h3>Tipo de clientes</h3>
                         <PieChart data={clienttype1}/>
                     </div>
-                    <div>
+                    <div className="chart-section">
                         <h3>Comentario más antiguo: </h3>
                         {oldestReview1.costumer_name}: {oldestReview1.comment}
                     </div>
-                    <div>
+                    <div className="chart-section">
                         <h3>Comentario más negativo: </h3>
                         {mostnegative1.costumer_name}: {mostnegative1.comment}
+                    </div>
+                    <div className="chart-section">
+                        <h3>Palabra más positiva: </h3>
+                        <ul className="chart-list">
+                            {positivewords1.map((positiveword, index) => (
+                                <li key={index}>{positiveword.word}: {positiveword.polarity}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="chart-section">
+                        <h3>Palabra más negativa: </h3>
+                        <ul className="chart-list">
+                            {negativewords1.map((negativeword, index) => (
+                                <li key={index}>{negativeword.word}: {negativeword.polarity}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="chart-section">
+                        <h3>Palabra más frecuentes: </h3>
+                        <ul className="chart-list">
+                            {bagofwords1.map((keyword, index) => (
+                                <li key={index}>{keyword.word}: {keyword.frecuency + 1}</li>
+                            ))}
+                        </ul>
                     </div>
 
                 </Col>               
                 <Col>
                     <h1>{stay2.name}</h1>
                     <PolarityRating polarity={polarity2} />
-                    <div>
+                    <div className="chart-section">
                         <h3>Número de noches</h3>
                         <PieChart data={numbernights2}/>
                     </div>
-                    <div>
+                    <div className="chart-section">
                         <h3>Comentario más reciente: </h3>
                         {latestReview2.costumer_name}: {latestReview2.comment}
                     </div>
-                    <div>
+                    <div className="chart-section">
                         <h3>Comentario más positivo: </h3>
                         {mostpositive2.costumer_name}: {mostpositive2.comment}
                     </div>
-                    <div>
+                    <div className="chart-section">
                         <h3>Tipo de clientes</h3>
                         <PieChart data={clienttype2}/>
                     </div>
-                    <div>
+                    <div className="chart-section">
                         <h3>Comentario más antiguo: </h3>
                         {oldestReview2.costumer_name}: {oldestReview2.comment}
                     </div>
-                    <div>
+                    <div className="chart-section">
                         <h3>Comentario más negativo: </h3>
                         {mostnegative2.costumer_name}: {mostnegative2.comment}
+                    </div>
+                    <div className="chart-section">
+                        <h3>Palabra más positiva: </h3>
+                        <ul className="chart-list">
+                            {positivewords2.map((positiveword, index) => (
+                                <li key={index}>{positiveword.word}: {positiveword.polarity}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="chart-section">
+                        <h3>Palabra más negativa: </h3>
+                        <ul className="chart-list">
+                            {negativewords2.map((negativeword, index) => (
+                                <li key={index}>{negativeword.word}: {negativeword.polarity}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="chart-section">
+                        <h3>Palabra más frecuentes: </h3>
+                        <ul className="chart-list">
+                            {bagofwords2.map((keyword, index) => (
+                                <li key={index}>{keyword.word}: {keyword.frecuency + 1}</li>
+                            ))}
+                        </ul>
                     </div>
 
                 </Col>
                 
-                
+
             </Row>
         </Container>
     );

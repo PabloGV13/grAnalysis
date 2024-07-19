@@ -11,6 +11,7 @@ import PieChart from "../../Components/Graphics/PieChart";
 import randomcolor from 'randomcolor';
 import { Pie } from "react-chartjs-2";
 import PolarityRating from '../../Components/Graphics/PolarityRating';
+import './styles.css';
  
 function Estadisticas(){
     const stay_id = useParams();
@@ -40,7 +41,7 @@ function Estadisticas(){
             axios.get('/api/reviews/mostnegative/'+stay_id.id),
             axios.get('/api/keywords/toppolarity/'+stay_id.id),
             axios.get('/api/keywords/lowestpolarity/'+stay_id.id),
-            //axios.get('/api/keywords/bagofwords/'+stay_id.id)
+            axios.get('/api/keywords/bagofwords/'+stay_id.id)
         ]).then(response => {
             const datas = response.map(r => r.data);
             setStay(datas[0]);
@@ -53,7 +54,7 @@ function Estadisticas(){
             setMostNegative(datas[6]);
             setPositiveWords(datas[7]);
             setNegativeWords(datas[8]);
-            //setBagOfWords(datas[10]);
+            setBagOfWords(datas[9]);
            
             // setData(response.data);
         }).catch(error => {
@@ -172,42 +173,66 @@ function Estadisticas(){
     // }, []);
 
     return(
-        <Container>
+        <Container fluid style={{ padding: '20px' }}>
             <h1>{stay.name}</h1>
             <PolarityRating polarity={polarity} />
-            <Row>
+            <Row style ={{ alignItems : 'stretch'}}>
                 <Col>
                     <Stack>
-                        <div>
+                        <div className="chart-section">
                             <h3>Número de noches</h3>
                             <PieChart align="center" data={numbernights}/>
                         </div>
-                        <div>
+                        <div className="chart-section">
                             <h3>Comentario más reciente: </h3>
                             {latestReview.costumer_name}: {latestReview.comment}
                         </div>
-                        <div>
+                        <div className="chart-section">
                             <h3>Comentario más positivo: </h3>
                             {mostpositive.costumer_name}: {mostpositive.comment}
+                        </div>
+                        <div className="chart-section">
+                            <h3>Palabras más positivas: </h3>
+                            <ul className="chart-list">
+                                {positivewords.map((positiveword, index) => (
+                                    <li key={index}>{positiveword.word}: {positiveword.polarity}</li>
+                                ))}
+                            </ul>
                         </div>
                     </Stack>
                 </Col>
                 <Col>
                     <Stack>
-                        <div>
+                        <div className="chart-section">
                             <h3>Tipo de clientes</h3>
                             <PieChart data={clienttype}/>
                         </div>
-                        <div>
+                        <div className="chart-section">
                             <h3>Comentario más antiguo: </h3>
                             {oldestReview.costumer_name}: {oldestReview.comment}
                         </div>
-                        <div>
+                        <div className="chart-section">
                             <h3>Comentario más negativo: </h3>
                             {mostnegative.costumer_name}: {mostnegative.comment}
                         </div>
+                        <div className="chart-section">
+                            <h3>Palabras más negativas: </h3>
+                            <ul className="chart-list">
+                                {negativewords.map((negativeword, index) => (
+                                    <li key={index}>{negativeword.word}: {negativeword.polarity}</li>
+                                ))}
+                            </ul>
+                        </div>
                     </Stack>
                 </Col>
+            </Row>
+            <Row>
+                <h3>Palabras más frecuentes: </h3>
+                <ul className="chart-list">
+                    {bagofwords.map((keyword, index) => (
+                        <li key={index}>{keyword.word}: {keyword.frecuency + 1}</li>
+                    ))}
+                </ul>
             </Row>
             {/* <Row>
                 <Col>

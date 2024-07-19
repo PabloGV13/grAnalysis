@@ -49,16 +49,12 @@ function Comparar() {
     };
 
     return(
-        <Container className="m-auto">
+        <Container className="m-auto" fluid style={{ padding: '20px' }}>
             <h1 className="fs-4 text-start">Selecciona dos alojamientos a comparar:</h1>
             {stays.length && <Table
                 loading = {loading}
                 dataSource={stays}
                 columns={[
-                    {
-                        title: '',
-                        dataIndex: "stay_id",
-                    },
                     {
                         title: 'Nombre',
                         dataIndex: "name"
@@ -73,7 +69,7 @@ function Comparar() {
                         dataIndex: "location"
                     },
                     {
-                        title: 'Puntucación',
+                        title: 'Puntuación',
                         dataIndex: "polarity"
                     },
                     {

@@ -37,15 +37,16 @@ class UserRegister(CustomAPIView):
             400: 'Invalid request'
         }
     )
-
     def post(self, request):
+        print(request.data)
         clean_data = custom_validation(request.data)
         serializer = UserRegisterSerializer(data=clean_data)
+        
         if serializer.is_valid(raise_exception=True):
             user = serializer.create(clean_data)
             if user:
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(data={"message": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLogin(CustomAPIView):
     permission_classes = (permissions.AllowAny,)
@@ -218,11 +219,12 @@ def getStay(request, id):
 def postRequestedStay(request):
     url_ = request.data.get('url')
     url = normalize_url(url_)
-
     if(url == "URL invalida"):
         return Response(data = {"message": "La URL es invalida."}, status=status.HTTP_401_UNAUTHORIZED)
     else:
+        
         (id_,is_reviewed) = stay_is_reviewed(url)
+        print(is_reviewed)
         if is_reviewed:
             return Response(data = {"message": "El alojamiento ya está registrado."}, status=status.HTTP_403_FORBIDDEN)
         else:
@@ -482,9 +484,9 @@ def getLowestPolarityKeywords(request,id):
 @permission_classes([permissions.AllowAny])
 def getBagOfWords(request,id):
     reviews = Review.objects.filter(stay_id=id)
-    keywords = Keyword.objects.filter(id_review__in=reviews)
-    bag_of_words = {keyword['word']:keyword['frecuency'] for keyword in keywords}
-    return Response(bag_of_words, status=status.HTTP_200_OK)
+    bagofwords = Keyword.objects.filter(id_review__in=reviews).exclude(word="").order_by('-frecuency')[:10]
+    serializer = KeywordSerializer(bagofwords, many = True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 #STAYS MAP
@@ -506,7 +508,7 @@ def getStaysMap(request):
     if default_location is None or (default_location.latitude, default_location.longitude) == (None, None):
         return render(request, 'error.html', {'error_message': 'No se pudo obtener la ubicación del alojamiento predeterminado.'})
 
-    m = folium.Map(location=[default_location.latitude, default_location.longitude], zoom_start=12)
+    m = folium.Map(tiles = "Cartodb Positron", location=[default_location.latitude, default_location.longitude], zoom_start=12)
     
     for stay in stays:
         try:
