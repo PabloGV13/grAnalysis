@@ -11,5 +11,7 @@ This project's main objective is to automate the process of analyzing the inform
 
 ![Alt text](images/ArchitectureDiagram.png)
 
+In this figure we can see the Architecture Diagram in which we appreciate the two main system roles: administrator and user. This two have access to the main content of the web app grAnalysis. The server would be able to solve all the requests related to the users tasks like the request of new analysis for new accommodations, the visualization of one analysis or the comparation between two existing analysis. Additionally, the administrator will be able to request maintenance and management tasks from the server, such as processing user requests, controlling user access to the platform, or updating the analysis of an accommodation. All the information required by the system will be stored in the MySQL database.
+
 ## License
 GNU General Public License v3.0 - Copyright (c) 2024 - Pablo Granados
