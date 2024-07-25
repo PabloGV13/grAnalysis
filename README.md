@@ -1,5 +1,5 @@
 # grAnalysis
-Final Degree Project of Computer Engineering Science titled "Web application for the study and analysis of customer comments in the hotel sector" at University of Cádiz - 2024
+Final Degree Project of Computer Engineering Science degree titled "Web application for the study and analysis of customer comments in the hotel sector" at University of Cádiz - 2024
 ## Abstract
 This project focuses on the development of a web platform in which users will be able to request and compare studies based on accommodation reviews registered in Booking. In this way, the user is granted access to relevant information about the reviews of these accommodations, as well as the results of a sentiment analysis of customer comments and different types of statistical studies.
 
