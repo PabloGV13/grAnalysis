@@ -7,6 +7,7 @@ All this will be carried out through a waterfall methodology through which a sys
 
 This project's main objective is to automate the process of analyzing the information corresponding to the reviews of the requested accommodations. Thus making it easier for the platform user, through natural language processing, to draw significant conclusions about the opinion that customers have of the accommodations studied.
 
-##Architecture Diagram
+## Architecture Diagram
+
 ![Alt text](images/ArchitectureDiagram.png)
 
