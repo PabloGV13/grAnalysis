@@ -6,3 +6,7 @@ This project focuses on the development of a web platform in which users will be
 All this will be carried out through a waterfall methodology through which a system will be formed that will consist of a backend server, composed of a REST API; a module that contemplates the collection, analysis and comparison of information; an SQL database, to store all the information captured and analyzed; and a web interface, through which users will access it.
 
 This project's main objective is to automate the process of analyzing the information corresponding to the reviews of the requested accommodations. Thus making it easier for the platform user, through natural language processing, to draw significant conclusions about the opinion that customers have of the accommodations studied.
+
+##Architecture Diagram
+![Alt text](images/ArchitectureDiagram.png)
+
