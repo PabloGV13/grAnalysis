@@ -11,3 +11,5 @@ This project's main objective is to automate the process of analyzing the inform
 
 ![Alt text](images/ArchitectureDiagram.png)
 
+## License
+GNU General Public License v3.0 - Copyright (c) 2024 - Pablo Granados
