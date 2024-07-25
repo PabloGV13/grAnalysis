@@ -13,5 +13,14 @@ In the following figure, we can see the Architecture Diagram in which we appreci
 
 ![Alt text](images/ArchitectureDiagram.png)
 
+## Development
+
+The main operation of the system can be divided into the following two modules:
+
+* **Data collection module** → Using web scraping techniques such as HTTP programming or DOM parsing with BeautifulSoup and the requests library, the system automates the extraction of data related to reviews through the URL of a Booking accommodation. Once we have the requested data, it is normalized using regular expressions.  
+ 
+* **Analysis module** → With all the information related to an accommodation, we apply the selected NLP model for classification, adapting the result to a polarity scale of 0.0 to 1.0, where 0 represents the most negative value and 1 represents the most positive. It is important to note that to increase the model's accuracy, each comment will be divided into sentences. The model will be applied to each sentence individually, evaluating each one separately. Using the NLTK library, the most relevant word from each sentence will be extracted and assigned a polarity relative to the sentence, taking into account its context.
+
+
 ## License
 GNU General Public License v3.0 - Copyright (c) 2024 - Pablo Granados
